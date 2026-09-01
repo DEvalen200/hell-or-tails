@@ -1,0 +1,744 @@
+<title>Simulador Hell or Tails</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rye&family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --ink:#120d0b; --panel:#1c1410; --panel2:#251a13; --line:#3b2c21;
+    --text:#eadfce; --muted:#a5917d; --ember:#ff4a2f; --gold:#e6a94f; --win:#6cbd93;
+    --font-body:"Archivo",system-ui,sans-serif;
+    --font-sign:"Rye",Georgia,serif;
+    --font-mono:"IBM Plex Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--ink);color:var(--text);font-family:var(--font-body);font-size:15px;line-height:1.5;margin:0;padding-bottom:40px}
+  ::selection{background:var(--ember);color:#fff}
+  .wrap{max-width:820px;margin:0 auto;padding:0 14px}
+
+  /* ---------- HUD ---------- */
+  header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:14px 2px}
+  .sign{font-family:var(--font-sign);font-size:22px;color:#ffd9c4;margin:0;
+    text-shadow:0 0 6px rgba(255,120,80,.9),0 0 18px rgba(255,74,47,.6)}
+  .hud{display:flex;gap:8px;flex-wrap:wrap}
+  .hud .chip{font-family:var(--font-mono);font-size:12.5px;border:1px solid var(--line);border-radius:999px;
+    padding:5px 12px;background:var(--panel);font-variant-numeric:tabular-nums}
+  .hud b{color:var(--gold);font-weight:600}
+  .hud button{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:999px;
+    padding:5px 12px;font-size:12px;cursor:pointer;font-family:var(--font-mono)}
+  .hud button:hover{border-color:var(--gold);color:var(--gold)}
+
+  /* ---------- STAGE ---------- */
+  #stage{position:relative;border:1px solid var(--line);border-radius:14px;overflow:hidden;
+    background:var(--panel);min-height:540px;transition:box-shadow .4s}
+  #stage.flash-win{box-shadow:0 0 60px rgba(230,169,79,.55) inset,0 0 30px rgba(230,169,79,.3)}
+  #stage.flash-lose{box-shadow:0 0 80px rgba(255,74,47,.5) inset}
+  #stage.shake{animation:shake .45s}
+  @keyframes shake{0%,100%{transform:none}20%{transform:translate(-7px,2px)}40%{transform:translate(6px,-3px)}60%{transform:translate(-5px,-2px)}80%{transform:translate(4px,2px)}}
+
+  .scene{padding:0 0 18px}
+  .scene-art{position:relative;height:150px;overflow:hidden;border-bottom:1px solid var(--line)}
+  .scene-art svg.art{position:absolute;inset:0;width:100%;height:100%}
+  .scene-body{padding:14px 18px 0}
+  .scene-title{margin:0 0 2px;font-size:18px;font-weight:800}
+  .scene-title .loc{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.22em;color:var(--ember);display:block;margin-bottom:3px;text-transform:uppercase}
+  .flavor{color:var(--muted);font-size:13.5px;margin:2px 0 12px}
+
+  .neon{font-family:var(--font-sign);fill:#ffb59a;font-size:15px;letter-spacing:1px}
+  .neon-flicker{animation:flick 6s infinite steps(1)}
+  @keyframes flick{0%,100%{opacity:1}43%{opacity:.25}44%{opacity:1}46%{opacity:.5}47%{opacity:1}81%{opacity:.3}82%{opacity:1}}
+
+  /* ---------- personajes ---------- */
+  .npcrow{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin:4px 0 10px}
+  .who{display:flex;flex-direction:column;align-items:center;gap:2px;width:86px}
+  .who .bust{width:64px;height:64px;filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))}
+  .who .nm{font-family:var(--font-mono);font-size:10.5px;color:var(--muted);text-align:center;line-height:1.3}
+
+  .bubble{position:relative;background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+    padding:10px 14px;font-size:13.5px;font-style:italic;color:var(--text);max-width:420px;margin:0 auto 12px}
+  .bubble::before{content:"";position:absolute;top:-7px;left:50%;transform:translateX(-50%) rotate(45deg);
+    width:12px;height:12px;background:var(--panel2);border-left:1px solid var(--line);border-top:1px solid var(--line)}
+
+  /* ---------- inventario ---------- */
+  .invbar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:6px 0 12px}
+  .slot{position:relative;width:76px;height:88px;border:1px solid var(--line);border-radius:10px;
+    background:var(--panel2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+    font-family:var(--font-body);color:var(--text);cursor:default;padding:4px}
+  .slot .e{font-size:28px;line-height:1}
+  .slot .v{font-family:var(--font-mono);font-size:10.5px;color:var(--gold);font-variant-numeric:tabular-nums}
+  .slot .n{font-size:9.5px;color:var(--muted);text-align:center;line-height:1.1;max-height:22px;overflow:hidden}
+  .slot .tb{position:absolute;top:3px;left:5px;font-family:var(--font-mono);font-size:9px;color:var(--muted)}
+  .slot.empty{border-style:dashed;opacity:.4}
+  .slot.empty .e{opacity:.5;font-size:20px}
+  button.slot{cursor:pointer}
+  button.slot:hover:not(:disabled){border-color:var(--gold)}
+  button.slot:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+  button.slot:disabled{opacity:.35;cursor:not-allowed}
+  .slot .act{position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);
+    font-family:var(--font-mono);font-size:9px;letter-spacing:.08em;background:var(--gold);color:#2e2008;
+    border-radius:99px;padding:1px 8px;white-space:nowrap}
+  .slot .act.sell{background:var(--win);color:#0e2418}
+
+  /* ---------- botones ---------- */
+  button{font-family:var(--font-body);font-weight:700;font-size:14px;color:var(--text);
+    background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 18px;cursor:pointer}
+  button:hover:not(:disabled){border-color:var(--gold)}
+  button:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  button.primary{background:var(--ember);border-color:var(--ember);color:#fff}
+  button.primary:hover:not(:disabled){background:#ff5c43}
+  .btnrow{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+  .bigact{font-size:16px;padding:14px 26px;border-radius:12px}
+  .doorbtn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 16px}
+  .doorbtn .ico{font-size:26px}
+  .doorbtn small{font-family:var(--font-mono);font-size:10px;color:var(--muted);font-weight:400}
+
+  /* tiendas */
+  .shops{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+  @media(max-width:640px){.shops{grid-template-columns:1fr}}
+  .shop{border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.18);padding:12px 14px}
+  .shop h3{margin:0 0 2px;font-size:15px;color:var(--gold);display:flex;align-items:center;gap:8px}
+  .shop h3 .bust{width:34px;height:34px}
+  .shop .say{font-size:11.5px;color:var(--muted);font-style:italic;margin:0 0 10px}
+  .shop-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}
+  .shop-row:last-child{border-bottom:none}
+  .shop-row .desc{color:var(--muted);font-size:11.5px}
+  .shop-row .price{margin-left:auto;font-family:var(--font-mono);color:var(--gold);white-space:nowrap;font-size:12px;font-variant-numeric:tabular-nums}
+  .owned{color:var(--win);font-family:var(--font-mono);font-size:11px;margin-left:auto}
+  .shop-row button{padding:4px 10px;font-size:12px}
+
+  /* ascensor */
+  .panelbox{border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.25);padding:14px;margin-top:12px}
+  .panelbox h3{margin:0 0 8px;font-size:15px;color:var(--gold)}
+  .floors{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  .fbtn{display:flex;flex-direction:column;align-items:center;gap:3px;width:96px;padding:10px 6px;border-radius:12px;
+    background:linear-gradient(180deg,#2b2016,#1c1410);border:1px solid var(--line)}
+  .fbtn:hover:not(:disabled){border-color:var(--gold);box-shadow:0 0 14px rgba(230,169,79,.25)}
+  .fbtn.devil{border-color:#6e1c10}
+  .fbtn.devil .num{border-color:var(--ember);color:var(--ember);background:radial-gradient(circle at 35% 30%,#3a0d08,#1a0505);box-shadow:0 0 14px rgba(255,74,47,.5)}
+  .fbtn.devil:hover:not(:disabled){border-color:var(--ember);box-shadow:0 0 18px rgba(255,74,47,.4)}
+  .fbtn .num{font-family:var(--font-sign);font-size:22px;color:var(--gold);
+    width:44px;height:44px;border-radius:50%;border:2px solid #6d5326;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 35% 30%,#3a2c1c,#241a10)}
+  .fbtn .bn{font-size:11px;font-weight:700}
+  .fbtn .pc{font-family:var(--font-mono);font-size:10.5px;color:var(--win)}
+  .fbtn .mn{font-family:var(--font-mono);font-size:9.5px;color:var(--muted);font-weight:400}
+
+  /* ---------- mesa ---------- */
+  .mesa-body{padding:10px 18px 0;text-align:center}
+  .boss-zone{display:flex;flex-direction:column;align-items:center;gap:4px;margin-top:-46px}
+  .boss-zone .bust{width:92px;height:92px;filter:drop-shadow(0 6px 10px rgba(0,0,0,.6))}
+  .boss-zone .bn{font-family:var(--font-sign);font-size:16px;color:#ffd9c4}
+  .score{font-family:var(--font-mono);font-size:17px;letter-spacing:.14em;margin:6px 0 2px}
+  .score .me{color:var(--win)} .score .opp{color:var(--ember)}
+  .table3d{position:relative;margin:8px auto 0;max-width:520px;border-radius:50%/34%;
+    background:radial-gradient(ellipse at 50% 30%,#5c1f16,#3a120c 70%);
+    border:3px solid #6d5326;min-height:150px;box-shadow:0 14px 30px rgba(0,0,0,.5),inset 0 0 40px rgba(0,0,0,.45);
+    display:flex;align-items:center;justify-content:space-around;padding:14px 20px;gap:8px}
+  .stakecard{width:120px;background:rgba(0,0,0,.3);border:1px solid var(--gold);border-radius:10px;padding:8px 6px}
+  .stakecard.mine{border-color:var(--win)}
+  .stakecard .lbl{font-family:var(--font-mono);font-size:8.5px;letter-spacing:.16em;color:var(--gold);text-transform:uppercase;display:block}
+  .stakecard.mine .lbl{color:var(--win)}
+  .stakecard .e{font-size:30px;display:block;margin:3px 0}
+  .stakecard .nm2{font-size:10.5px;line-height:1.15;display:block}
+  .stakecard .v{font-family:var(--font-mono);font-size:11px;color:var(--gold);display:block;margin-top:2px}
+  .stakecard .hueco{font-size:11px;color:var(--muted);font-style:italic;display:block;padding:14px 0}
+
+  .coin-scene{perspective:600px;width:110px;height:110px;margin:0 auto}
+  .coin{width:100px;height:100px;margin:5px;position:relative;transform-style:preserve-3d;transition:transform .35s cubic-bezier(.2,.7,.3,1)}
+  .coin .face{position:absolute;inset:0;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-sign);font-size:42px;backface-visibility:hidden;
+    background:radial-gradient(circle at 32% 30%,#ffdf9e,#e6a94f 55%,#8a5f22);
+    border:3px solid #7a531d;color:#4a3110;box-shadow:0 0 26px rgba(230,169,79,.35)}
+  .coin .face.back{transform:rotateY(180deg);
+    background:radial-gradient(circle at 32% 30%,#ff9a7e,#c93a26 60%,#6e1c10);
+    border-color:#5c170c;color:#2e0a04}
+  .choice{display:flex;gap:14px;justify-content:center;margin:10px 0 4px}
+  .choice button{font-size:17px;padding:13px 30px;border-radius:14px;font-family:var(--font-sign);letter-spacing:1px}
+  .duel-log{font-family:var(--font-mono);font-size:12.5px;color:var(--muted);min-height:38px;margin-top:6px}
+  .duel-log .big{font-size:14px;color:var(--text)}
+  .duel-log .good{color:var(--win)} .duel-log .bad{color:var(--ember)} .duel-log .goldt{color:var(--gold)}
+
+  /* ---------- overlays ---------- */
+  #elev{position:absolute;inset:0;z-index:40;display:none;pointer-events:none;overflow:hidden}
+  #elev .door{position:absolute;top:0;bottom:0;width:51%;background:linear-gradient(90deg,#241a10,#3a2b1a 60%,#241a10);
+    border-right:2px solid #6d5326;transition:transform 1s ease-in-out}
+  #elev .dl{left:0;transform:translateX(-102%)} #elev .dr{right:0;border-right:none;border-left:2px solid #6d5326;transform:translateX(102%)}
+  #elev.closed .dl{transform:none} #elev.closed .dr{transform:none}
+  #elev .floorno{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:2;
+    font-family:var(--font-mono);font-size:20px;color:var(--gold);background:#000a;border:1px solid var(--line);
+    border-radius:8px;padding:4px 16px;opacity:0;transition:opacity .3s}
+  #elev.closed .floorno{opacity:1}
+
+  .overlay{position:absolute;inset:0;z-index:50;background:rgba(10,6,4,.82);display:none;
+    align-items:center;justify-content:center;padding:20px}
+  .overlay.show{display:flex}
+  .ocard{background:var(--panel);border:1px solid var(--line);border-radius:14px;max-width:520px;width:100%;
+    max-height:88%;overflow-y:auto;padding:18px 20px;position:relative}
+  .ocard h3{margin:0 0 8px;color:var(--gold)}
+  .ocard .x{position:absolute;top:10px;right:10px;padding:4px 10px;font-size:13px}
+  .bigmsg{text-align:center;font-family:var(--font-sign);font-size:30px;color:#ffd9c4;margin:6px 0 2px;
+    text-shadow:0 0 14px rgba(255,74,47,.7)}
+  .bigmsg.gold{color:#ffe9b8;text-shadow:0 0 14px rgba(230,169,79,.8)}
+
+  /* fx flotantes */
+  #fx{position:absolute;inset:0;pointer-events:none;z-index:60;overflow:hidden}
+  .float{position:absolute;font-family:var(--font-mono);font-weight:600;font-size:15px;
+    animation:rise 1.3s ease-out forwards;white-space:nowrap;text-shadow:0 2px 4px #000}
+  @keyframes rise{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-70px)}}
+
+  .log{font-family:var(--font-mono);font-size:11.5px;color:var(--muted);max-height:84px;overflow-y:auto;
+    margin:10px 18px 0;border-top:1px solid var(--line);padding-top:8px}
+  .log div{margin-bottom:3px}
+  .log .good{color:var(--win)} .log .bad{color:var(--ember)} .log .gold{color:var(--gold)}
+
+  .lab-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}
+  select{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:7px 10px;font-family:var(--font-mono);font-size:13px}
+  .lab-out{font-family:var(--font-mono);font-size:12.5px;white-space:pre-wrap;color:var(--muted)}
+  .lab-out b{color:var(--win)}
+
+  @media (prefers-reduced-motion:reduce){
+    .coin{transition:none}.neon-flicker{animation:none}
+    #stage.shake{animation:none}.float{animation-duration:.6s}
+    #elev .door{transition:none}
+  }
+
+  /* ---------- móvil ---------- */
+  @media (max-width:560px){
+    body{font-size:14px}
+    .wrap{padding:0 8px}
+    header{padding:10px 2px}
+    .sign{font-size:18px}
+    .hud .chip{font-size:11px;padding:4px 9px}
+    #stage{min-height:0;border-radius:10px}
+    .scene-art{height:104px}
+    .scene-body{padding:10px 10px 0}
+    .mesa-body{padding:8px 8px 0}
+    .flavor{font-size:12.5px}
+    .bubble{font-size:12.5px;padding:8px 12px;max-width:none}
+    .boss-zone .bust{width:68px;height:68px}
+    .boss-zone{margin-top:-34px}
+    .table3d{padding:10px 8px;min-height:118px;gap:4px}
+    .stakecard{width:92px;padding:6px 4px}
+    .stakecard .e{font-size:24px}
+    .coin-scene{width:82px;height:82px}
+    .coin{width:74px;height:74px}
+    .coin .face{font-size:28px}
+    .choice button{flex:1;max-width:170px;padding:14px 0}
+    .slot{width:62px;height:78px}
+    .slot .e{font-size:22px}
+    .slot .n{display:none}
+    .fbtn{width:86px;padding:8px 4px}
+    .fbtn .num{width:40px;height:40px;font-size:19px}
+    .shop{padding:10px 12px}
+    .log{max-height:52px;margin:6px 10px 0;font-size:10.5px}
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1 class="sign">HELL OR TAILS</h1>
+    <div class="hud">
+      <span class="chip">💰 <b id="hud-money">0</b> €</span>
+      <span class="chip">🪙 nv <b id="hud-coin">0</b> (<b id="hud-bonus">+0 %</b>)</span>
+      <span class="chip">🏙️ calle <b id="hud-street">T1</b></span>
+      <button id="code-open">💾 código</button>
+      <button id="lab-open">🧪 lab</button>
+      <button id="reset">⟲</button>
+      <span class="chip" style="color:var(--muted)">v16</span>
+    </div>
+  </header>
+
+  <div id="stage">
+    <div id="nostorage" style="display:none;background:#3a0d08;color:#ffb59a;font-size:12px;padding:6px 12px;text-align:center;font-family:var(--font-mono)">⚠️ Este navegador no guarda la partida (modo privado o datos bloqueados): al recargar se pierde. Usa 💾 código para guardarla a mano.</div>
+    <main id="app"></main>
+    <div id="log" class="log"></div>
+
+    <div id="elev"><div class="floorno" id="elev-no">·</div><div class="door dl"></div><div class="door dr"></div></div>
+
+    <div class="overlay" id="ov-result"><div class="ocard" id="ov-result-in"></div></div>
+
+    <div class="overlay" id="ov-code"><div class="ocard">
+      <button class="x" data-close="ov-code">✕</button>
+      <h3>💾 Código de partida</h3>
+      <p class="flavor">Copia este código para guardar tu partida y pégalo en cualquier navegador para continuarla.</p>
+      <textarea id="code-out" readonly style="width:100%;height:70px;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:6px;font-family:var(--font-mono);font-size:10px;padding:8px"></textarea>
+      <div class="btnrow" style="justify-content:flex-start"><button id="code-copy">Copiar</button></div>
+      <p class="flavor" style="margin-top:14px">Cargar una partida:</p>
+      <textarea id="code-in" placeholder="pega aquí un código…" style="width:100%;height:70px;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:6px;font-family:var(--font-mono);font-size:10px;padding:8px"></textarea>
+      <div class="btnrow" style="justify-content:flex-start"><button class="primary" id="code-load">Cargar</button><span id="code-msg" class="flavor" style="align-self:center"></span></div>
+    </div></div>
+
+    <div class="overlay" id="ov-lab"><div class="ocard">
+      <button class="x" data-close="ov-lab">✕</button>
+      <h3>🧪 Laboratorio de balance</h3>
+      <p class="flavor">20.000 duelos simulados, moneda pura.</p>
+      <div class="lab-controls">
+        <label>Piso <select id="lab-floor"></select></label>
+        <label>Moneda <select id="lab-coin"></select></label>
+        <button id="lab-run">Simular</button>
+      </div>
+      <div class="lab-out" id="lab-out">—</div>
+    </div></div>
+
+    <div id="fx"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ================= DATOS (GDD v0.5) =================
+const TIERS=[
+ {n:1,min:5,max:15,items:[['Lata abollada','🥫'],['Zapato viejo','👞'],['Paraguas roto','☂️'],['Revista del 98','📰'],['Botella vacía','🍾']]},
+ {n:2,min:20,max:50,items:[['Radio vieja','📻'],['Cartera','👛'],['Reloj de plástico','⏰'],['Patinete oxidado','🛴']]},
+ {n:3,min:75,max:200,items:[['Teléfono','📱'],['Cadena de plata','⛓️'],['Altavoz','🔊'],['Monopatín','🛹']]},
+ {n:4,min:300,max:800,items:[['Reloj de oro','⌚'],['Portátil','💻'],['Guitarra eléctrica','🎸'],['Cámara réflex','📷']]},
+ {n:5,min:1200,max:3000,items:[['Joyas','💍'],['Lingote pequeño','🪙'],['Cuadro','🖼️'],['Abrigo de pieles','🧥']]},
+ {n:6,min:5000,max:12000,items:[['Maletín cerrado','💼'],['Estatuilla de museo','🗿'],['Llaves de un deportivo','🔑']]},
+ {n:7,min:20000,max:50000,items:[['Deportivo (papeles falsos)','🏎️'],['Obra maestra robada','🎨'],['Caja de relojes suizos','⌚']]},
+ {n:8,min:75000,max:200000,items:[['Escrituras de un rascacielos','🏢'],['Diamante «Ojo de Cabra»','💎'],['Contenedor del puerto','📦']]},
+ {n:9,min:300000,max:800000,items:[['Un yate','🛥️'],['La deuda de un senador','📜'],['Una isla (en papeles)','🏝️']]},
+];
+const FLOORS=[
+ {f:1,to:1,handicap:0.00,betTier:1,boss:'El Trilero',    coat:'#7a5a34',skin:'#d9a06b',hat:1,amb:'Una trastienda con una mesa coja.'},
+ {f:2,to:2,handicap:0.05,betTier:2,boss:'La Viuda',      coat:'#5c3a66',skin:'#e0b58a',hat:2,amb:'Terciopelo rojo y humo dulce.'},
+ {f:3,to:3,handicap:0.10,betTier:3,boss:'El Sepulturero',coat:'#4a4f57',skin:'#c9c2b4',hat:1,amb:'Piedra fría y antorchas.'},
+ {f:4,to:4,handicap:0.15,betTier:4,boss:'La Ceniza',     coat:'#6e2f22',skin:'#b87d6a',amb:'El suelo cruje con grietas de lava.'},
+ {f:5,to:5,handicap:0.20,betTier:5,boss:'El Notario',    coat:'#23252b',skin:'#d9a06b',glasses:1,amb:'Esto ya no parece un club.'},
+ {f:6,to:6,handicap:0.25,betTier:6,boss:'El Coleccionista',coat:'#2f5d47',skin:'#d9a06b',glasses:1,amb:'Las Profundidades. Hace calor.'},
+ {f:7,to:7,handicap:0.30,betTier:7,boss:'La Sombra',     coat:'#17141a',skin:'#241f28',gold_eyes:1,amb:'La luz no llega al techo.'},
+ {f:8,to:8,handicap:0.35,betTier:8,boss:'El Socio',      coat:'#b9af9c',skin:'#e8d6c0',amb:'Aquí las paredes respiran.'},
+ {f:9,to:8,handicap:0.40,betTier:9,boss:'Don Azufre',    coat:'#7e1a0e',skin:'#c8553a',horns:1,amb:'El fondo. O casi.'},
+ {f:10,to:1,handicap:0,betTier:9,mb:1200000,devil:1,boss:'El Diablo',coat:'#1a0505',skin:'#c8553a',horns:1,gold_eyes:1,amb:'La sala del millón.'},
+];
+const COIN_PRICES=[100,150,350,900,2500,6000,15000,35000,90000,250000]; // acum: 100/250/600/1.500/4.000/10.000/25.000/60.000/150.000/400.000
+const COIN_NAMES=['Céntimo oxidado','Céntimo pulido','De latón','De plata','Plata grabada','De oro','Oro grabado','Con un rubí','Grabado demoníaco','Con fuego dentro','Doblón infernal'];
+const UPGRADES={
+ canto:{name:'Canto de plomo',price:1500,desc:'5% de que un fallo caiga de canto: se repite.'},
+ pies:{name:'Pies fríos',price:5000,desc:'Retírate cuando quieras pagando el valor de tu objeto.'},
+ amuleto:{name:'Amuleto de perro',price:25000,desc:'1 vez por duelo: un fallo letal se repite. 🐕'},
+};
+const NPCS=[
+ {name:'un mendigo',w:30,off:1},{name:'un jubilado',w:25,off:[1,0]},
+ {name:'un oficinista',w:25,off:0},{name:'un turista',w:12,off:0},
+ {name:'un pijo',w:8,off:0,high:true},
+];
+
+// ================= ESTADO =================
+const FRESH={loc:'calle',money:0,coinLvl:0,ups:{canto:false,amuleto:false,pies:false},
+ inv:[],unlocked:[true,false,false,false,false,false,false,false,false],
+ duel:null,stake:null,floor:0,losses:0,
+ stats:{robbed:0,duels:0,wins:0,earned:0},log:[]};
+let S=load();
+// código de partida (unicode-safe base64)
+function encSave(){return btoa(unescape(encodeURIComponent(JSON.stringify(S))))}
+function decSave(t){const o=JSON.parse(decodeURIComponent(escape(atob(t.trim()))));
+ if(!o||!Array.isArray(o.inv)||!Array.isArray(o.unlocked))throw new Error('bad');return o}
+function load(){
+ try{
+  const r=localStorage.getItem('hot-sim-v4');
+  const old=localStorage.getItem('hot-sim-v3');
+  if(r){
+   const s=JSON.parse(r);
+   // partida nueva sin tocar + partida antigua huérfana → rescatar la antigua
+   if(old&&s.stats&&s.stats.duels===0&&s.stats.robbed===0&&s.money===0){
+    const o=JSON.parse(old);localStorage.removeItem('hot-sim-v3');return o}
+   return s;
+  }
+  if(old){const o=JSON.parse(old);localStorage.removeItem('hot-sim-v3');return o}
+ }catch(e){}
+ try{ // rescate desde la URL (enlaces compartidos con almacén vacío en cada carga)
+  const m=location.hash.match(/#s=(.+)/);
+  if(m)return decSave(decodeURIComponent(m[1]));
+ }catch(e){}
+ return structuredClone(FRESH)}
+// la partida también viaja en la URL, con cuentagotas para no saturar el historial
+let lastHash=0;
+function writeHash(force){
+ try{
+  const now=Date.now();
+  if(!force&&now-lastHash<1500)return;
+  lastHash=now;
+  history.replaceState(null,'','#s='+encodeURIComponent(encSave()));
+ }catch(e){}
+}
+function save(){try{localStorage.setItem('hot-sim-v4',JSON.stringify(S))}catch(e){} writeHash(false)}
+window.addEventListener('pagehide',()=>writeHash(true));
+window.addEventListener('beforeunload',()=>writeHash(true));
+// detección de almacenamiento roto (incógnito / datos bloqueados / vista aislada)
+let storageOK=false;
+try{localStorage.setItem('hot-probe','1');storageOK=localStorage.getItem('hot-probe')==='1';localStorage.removeItem('hot-probe')}catch(e){}
+
+// ================= UTILIDADES =================
+const $=s=>document.querySelector(s);
+const rnd=(a,b)=>Math.round(a+Math.random()*(b-a));
+const fmt=n=>n.toLocaleString('es-ES');
+const tierAvg=t=>(TIERS[t-1].min+TIERS[t-1].max)/2;
+const minBet=f=>f.mb||TIERS[f.betTier-1].min;
+const prizeMin=i=>i<FLOORS.length-1?minBet(FLOORS[i+1]):1200000;
+// prob. de ganar el DUELO: 55% + 5 pts × (nivel − piso), siempre decreciente al bajar
+function duelWin(i,lvl){const f=FLOORS[i];if(f.devil)return 0.5;
+ return Math.min(1,Math.max(0.02,0.55+0.05*(lvl-f.f)))}
+// moneda por lanzamiento derivada de la prob. objetivo del duelo (bisección)
+function pForTarget(t,N){if(t>=1)return 1;if(t<=0.001)return 0.001;
+ let lo=0.001,hi=0.999;for(let k=0;k<40;k++){const m=(lo+hi)/2;probWin(m,N)>t?hi=m:lo=m}
+ return (lo+hi)/2}
+function pFlip(){const f=FLOORS[S.floor];if(f.devil)return 0.5;
+ let t=duelWin(S.floor,S.coinLvl);
+ if(S.floor===0&&S.losses>=3)t=Math.min(1,t+0.10);
+ return pForTarget(t,f.to)}
+function streetCeil(){let d=0;S.unlocked.forEach((u,i)=>{if(u)d=i});return Math.min(6,1+Math.max(0,d-3))}
+function pickItem(t){const it=TIERS[t-1].items[rnd(0,TIERS[t-1].items.length-1)];return it}
+function makeItem(t,high){const tt=TIERS[t-1];const [name,e]=pickItem(t);
+ const lo=high?Math.round((tt.min+tt.max)/2):tt.min;
+ return{name,e,tier:t,val:rnd(lo,tt.max)}}
+function makeStake(i){
+ if(FLOORS[i].devil)return{name:'Tu antigua vida',e:'🌅',tier:'∞',val:0,life:true};
+ const val=prizeMin(i)+rnd(0,10);
+ let t=TIERS[0];for(const x of TIERS)if(val>=x.min)t=x;
+ const [name,e]=pickItem(t.n);return{name,e,tier:t.n,val}}
+function probWin(p,N){let s=0;for(let j=0;j<N;j++)s+=C(N-1+j,j)*Math.pow(p,N)*Math.pow(1-p,j);return s}
+function C(n,k){let r=1;for(let i=1;i<=k;i++)r=r*(n-k+i)/i;return r}
+function log(msg,cls){S.log.unshift({m:msg,c:cls||''});S.log=S.log.slice(0,20)}
+function fx(txt,color){const d=document.createElement('div');d.className='float';d.textContent=txt;
+ d.style.color=color||'#e6a94f';d.style.left=(35+Math.random()*30)+'%';d.style.top='45%';
+ $('#fx').appendChild(d);setTimeout(()=>d.remove(),1400)}
+function flash(cls){const st=$('#stage');st.classList.add(cls);setTimeout(()=>st.classList.remove(cls),cls==='shake'?500:900)}
+
+// retrato SVG
+function bust(o,sz){
+ const eyes=o.gold_eyes?'#e6a94f':'#1c1410';
+ return `<svg class="bust" viewBox="0 0 80 80" ${sz?`style="width:${sz}px;height:${sz}px"`:''} aria-hidden="true">
+  <path d="M8,80 Q8,52 40,52 Q72,52 72,80 Z" fill="${o.coat}"/>
+  <circle cx="40" cy="33" r="15" fill="${o.skin}"/>
+  ${o.horns?'<path d="M28,22 L21,6 L33,17 Z" fill="#3a0d08"/><path d="M52,22 L59,6 L47,17 Z" fill="#3a0d08"/>':''}
+  ${o.hat===1?'<rect x="22" y="14" width="36" height="6" rx="2" fill="#191008"/><rect x="29" y="2" width="22" height="13" rx="2" fill="#191008"/>':''}
+  ${o.hat===2?'<path d="M20,20 Q40,0 60,20 L60,24 L20,24 Z" fill="#191008"/>':''}
+  ${o.glasses?'<rect x="28" y="29" width="9" height="7" rx="2" fill="#0d0a07"/><rect x="43" y="29" width="9" height="7" rx="2" fill="#0d0a07"/><rect x="37" y="31" width="6" height="2" fill="#0d0a07"/>':
+   `<circle cx="34" cy="32" r="2.2" fill="${eyes}"/><circle cx="46" cy="32" r="2.2" fill="${eyes}"/>`}
+ </svg>`;
+}
+const ENCARGADO={coat:'#8a2635',skin:'#d9a06b',hat:1};
+const PERISTA={coat:'#3d5a45',skin:'#c98d5e',glasses:1};
+const BUHONERO={coat:'#4b3a6b',skin:'#e0b58a',hat:2};
+
+// arte de escena
+function artCalle(){return `<svg class="art" viewBox="0 0 800 150" preserveAspectRatio="xMidYMid slice">
+ <rect width="800" height="150" fill="#0d1220"/>
+ <circle cx="660" cy="26" r="12" fill="#e8e2cf" opacity=".8"/>
+ <rect x="20" y="40" width="110" height="110" fill="#141a2b"/><rect x="150" y="20" width="90" height="130" fill="#101626"/>
+ <rect x="260" y="55" width="130" height="95" fill="#161d30"/><rect x="410" y="30" width="100" height="120" fill="#121828"/>
+ <rect x="530" y="60" width="120" height="90" fill="#141a2b"/><rect x="670" y="45" width="110" height="105" fill="#101626"/>
+ ${[...Array(14)].map((_,i)=>`<rect x="${40+i*54}" y="${60+(i%3)*22}" width="8" height="10" fill="#e6a94f" opacity=".${3+(i*7)%6}"/>`).join('')}
+ <rect y="128" width="800" height="22" fill="#0a0d16"/>
+ <rect x="330" y="52" width="4" height="76" fill="#222"/><circle cx="332" cy="48" r="7" fill="#ffdf9e"/>
+ <ellipse cx="332" cy="128" rx="46" ry="8" fill="#ffdf9e" opacity=".12"/>
+ <rect x="700" y="60" width="80" height="68" fill="#070509"/>
+ <text x="740" y="92" text-anchor="middle" class="neon neon-flicker">HELL</text>
+ <text x="740" y="110" text-anchor="middle" class="neon neon-flicker">OR TAILS</text>
+</svg>`}
+function artClub(){return `<svg class="art" viewBox="0 0 800 150" preserveAspectRatio="xMidYMid slice">
+ <rect width="800" height="150" fill="#241016"/>
+ <rect width="800" height="150" fill="url(#g1)"/><defs>
+ <radialGradient id="g1" cx="50%" cy="0%" r="90%"><stop offset="0%" stop-color="#e6a94f" stop-opacity=".20"/><stop offset="60%" stop-color="#000" stop-opacity="0"/></radialGradient></defs>
+ <rect y="120" width="800" height="30" fill="#3a1219"/>
+ <path d="M380,0 L420,0 L414,26 L386,26 Z" fill="#191008"/><ellipse cx="400" cy="30" rx="26" ry="8" fill="#ffdf9e" opacity=".65"/>
+ <rect x="60" y="46" width="150" height="74" rx="6" fill="#1c1410" stroke="#3b2c21"/>
+ <text x="135" y="90" text-anchor="middle" fill="#a5917d" font-size="13" font-family="monospace">COMPRA·VENTA</text>
+ <rect x="590" y="40" width="150" height="80" rx="6" fill="#1c1410" stroke="#3b2c21"/>
+ <text x="665" y="66" text-anchor="middle" font-size="16">🪙</text><text x="665" y="88" text-anchor="middle" font-size="16">🐕</text><text x="665" y="110" text-anchor="middle" font-size="16">🥶</text>
+ <rect x="345" y="46" width="110" height="104" fill="#241a10" stroke="#6d5326" stroke-width="3"/>
+ <line x1="400" y1="46" x2="400" y2="150" stroke="#6d5326" stroke-width="3"/>
+ <text x="400" y="40" text-anchor="middle" fill="#e6a94f" font-size="11" font-family="monospace">▼ ASCENSOR ▼</text>
+</svg>`}
+function artMesa(fi){const t=fi/(FLOORS.length-1);
+ const top=`hsl(${18-t*14},${45+t*30}%,${16-t*8}%)`,glow=t>0.4?'#ff4a2f':'#e6a94f';
+ return `<svg class="art" viewBox="0 0 800 150" preserveAspectRatio="xMidYMid slice">
+ <rect width="800" height="150" fill="${top}"/>
+ <rect width="800" height="150" fill="url(#g2)"/><defs>
+ <radialGradient id="g2" cx="50%" cy="100%" r="100%"><stop offset="0%" stop-color="${glow}" stop-opacity=".28"/><stop offset="70%" stop-color="#000" stop-opacity=".25"/></radialGradient></defs>
+ ${fi>=2?`<path d="M60,150 L90,70 L120,150 Z" fill="#000" opacity=".3"/><path d="M680,150 L710,60 L740,150 Z" fill="#000" opacity=".3"/>`:''}
+ ${fi>=3?[...Array(6)].map((_,i)=>`<path d="M${80+i*130},150 q10,-${20+i*4} 22,0 Z" fill="#ff4a2f" opacity=".5"/>`).join(''):''}
+ <text x="400" y="34" text-anchor="middle" fill="#ffd9c4" opacity=".8" font-size="13" font-family="monospace" letter-spacing="6">PISO −${FLOORS[fi].f}</text>
+</svg>`}
+
+// ================= RENDER =================
+function render(){
+ $('#hud-money').textContent=fmt(S.money);
+ $('#hud-coin').textContent=S.coinLvl;
+ $('#hud-bonus').textContent='+'+(S.coinLvl*5)+' %';
+ $('#hud-street').textContent='T'+streetCeil();
+ const app=$('#app');
+ if(S.loc==='calle')app.innerHTML=viewCalle();
+ else if(S.loc==='club')app.innerHTML=viewClub();
+ else app.innerHTML=viewMesa();
+ $('#log').innerHTML=S.log.map(l=>`<div class="${l.c}">${l.m}</div>`).join('');
+ bind(); save();
+}
+function slots(mode){
+ let h='<div class="invbar">';
+ const n=Math.max(6,S.inv.length);
+ for(let i=0;i<n;i++){
+  const it=S.inv[i];
+  if(!it){h+='<div class="slot empty"><span class="e">·</span></div>';continue}
+  const inner=`<span class="tb">T${it.tier}</span><span class="e">${it.e}</span><span class="n">${it.name}</span><span class="v">${fmt(it.val)} €</span>`;
+  if(mode==='sell')h+=`<button class="slot" data-sell="${i}">${inner}<span class="act sell">VENDER</span></button>`;
+  else if(mode==='bet'){const ok=it.val>=minBet(FLOORS[S.floor]);
+   h+=`<button class="slot" data-bet="${i}" ${ok?'':'disabled'}>${inner}${ok?'<span class="act">APOSTAR</span>':''}</button>`}
+  else h+=`<div class="slot">${inner}</div>`;
+ }
+ return h+'</div>';
+}
+
+function viewCalle(){
+ return `<div class="scene">
+  <div class="scene-art">${artCalle()}</div>
+  <div class="scene-body">
+   <h2 class="scene-title"><span class="loc">La calle · noche</span></h2>
+   <p class="flavor" style="text-align:center">La calle da hasta Tier ${streetCeil()}.</p>
+   <div class="btnrow">
+     <button class="primary bigact" id="rob" ${S.inv.length>=6?'disabled':''}>🏏 PALAZO</button>
+     <button class="doorbtn" id="toclub"><span class="ico">🚪</span>Al club</button>
+   </div>
+   ${S.inv.length>=6?'<p class="flavor" style="text-align:center;margin-top:8px">Bolsillos llenos.</p>':''}
+   ${slots('none')}
+  </div></div>`;
+}
+function viewClub(){
+ const coinRow=`<div class="shop-row"><span>🪙 Tu moneda: <strong>${COIN_NAMES[S.coinLvl]}</strong> <span class="desc">nivel ${S.coinLvl} de 10 · +${S.coinLvl*5} %</span></span></div>`+(S.coinLvl<10
+  ?`<div class="shop-row"><span>⬆️ ${COIN_NAMES[S.coinLvl+1]} <span class="desc">nivel ${S.coinLvl+1} · +${(S.coinLvl+1)*5} %</span></span>
+    <span class="price">${fmt(COIN_PRICES[S.coinLvl])} €</span>
+    <button data-buycoin ${S.money>=COIN_PRICES[S.coinLvl]?'':'disabled'}>Subir</button></div>`
+  :`<div class="shop-row"><span class="desc">Arde al girar. No existe nada mejor.</span><span class="owned">MÁXIMO</span></div>`);
+ const upRows=Object.entries(UPGRADES).map(([k,u])=>S.ups[k]
+  ?`<div class="shop-row"><span>${u.name} <span class="desc">${u.desc}</span></span><span class="owned">✓</span></div>`
+  :`<div class="shop-row"><span>${u.name} <span class="desc">${u.desc}</span></span><span class="price">${fmt(u.price)} €</span><button data-buyup="${k}" ${S.money>=u.price?'':'disabled'}>Comprar</button></div>`).join('');
+ const floors=S.unlocked.map((u,i)=>{
+   if(!u)return '';
+   const f=FLOORS[i];
+   if(f.devil)return `<button class="fbtn devil" data-floor="${i}"><span class="num">🔥</span>
+     <span class="bn">? ? ?</span><span class="pc" style="color:var(--ember)">50 % · un lanzamiento</span>
+     <span class="mn">mín 1.200.000 € → tu vida</span></button>`;
+   return `<button class="fbtn" data-floor="${i}"><span class="num">−${f.f}</span>
+     <span class="bn">${f.boss}</span><span class="pc">${(duelWin(i,S.coinLvl)*100).toFixed(0)} %</span>
+     <span class="mn">${fmt(minBet(f))} € → ${fmt(prizeMin(i))} €</span></button>`;
+ }).join('');
+ return `<div class="scene">
+  <div class="scene-art">${artClub()}</div>
+  <div class="scene-body">
+   <div class="npcrow">
+     <div class="who">${bust(ENCARGADO)}<span class="nm">El Encargado</span></div>
+   </div>
+   <div class="bubble">«¿Vendes, compras suerte… o bajas?»</div>
+   <div class="shops">
+    <div class="shop"><h3>${bust(PERISTA,34)} El Perista</h3>
+      ${S.inv.length?slots('sell'):'<p class="flavor">Nada que vender.</p>'}</div>
+    <div class="shop"><h3>${bust(BUHONERO,34)} El Buhonero</h3>
+      ${coinRow}${upRows}</div>
+   </div>
+   <div class="panelbox"><h3>🛗 Ascensor</h3>
+     <div class="floors">${floors}</div>
+   </div>
+   <div class="btnrow"><button class="doorbtn" id="tocalle"><span class="ico">🚪</span>A la calle</button></div>
+  </div></div>`;
+}
+function viewMesa(){
+ const f=FLOORS[S.floor],d=S.duel;
+ const pips=(n,tot,cls)=>{let s='';for(let i=0;i<tot;i++)s+=i<n?'●':'○';return `<span class="${cls}">${s}</span>`};
+ const myCard=d
+  ?`<div class="stakecard mine"><span class="lbl">Tu apuesta</span><span class="e">${d.bet.e}</span><span class="nm2">${d.bet.name}</span><span class="v">${fmt(d.bet.val)} €</span></div>`
+  :`<div class="stakecard mine"><span class="lbl">Tu apuesta</span><span class="hueco">elige abajo…</span></div>`;
+ const hisCard=`<div class="stakecard"><span class="lbl">Su apuesta</span><span class="e">${S.stake.e}</span><span class="nm2">${S.stake.name}</span><span class="v">${S.stake.life?'— sin precio —':fmt(S.stake.val)+' €'}</span></div>`;
+ let bottom='';
+ if(!d){
+  const any=S.inv.some(it=>it.val>=minBet(f));
+  bottom=`${slots('bet')}
+   ${any?'':'<p class="flavor" style="text-align:center">Mínima: '+fmt(minBet(f))+' €. '+(S.floor===0?'A robar.':'Sube un piso.')+'</p>'}
+   <div class="btnrow"><button class="doorbtn" id="toclub2"><span class="ico">🛗</span>Ascensor</button></div>`;
+ }else if(!d.over){
+  bottom=`<div class="choice">
+    <button class="primary" data-call="cara" ${d.busy?'disabled':''}>CARA</button>
+    <button class="primary" data-call="cruz" ${d.busy?'disabled':''}>CRUZ</button></div>
+   <div class="duel-log">${d.msg||'Elige tu lado.'}</div>
+   ${S.ups.pies&&!f.devil?`<div class="btnrow"><button id="retire" ${S.money>=d.bet.val?'':'disabled'}>🥶 Retirarse · pagar ${fmt(d.bet.val)} €</button></div>`:''}`;
+ }else if(d.over==='win'){
+  bottom=`<div class="duel-log"><span class="big good">🎉 Te llevas ${d.prize.e} ${d.prize.name} · ${fmt(d.prize.val)} €</span>${d.unlock?`<br><span class="goldt">${d.unlock}</span>`:''}</div>
+   <div class="btnrow"><button class="primary" id="again">Otra ronda</button><button id="wonout">Al ascensor</button></div>`;
+ }else{ // lose
+  bottom=d.kicked
+   ?`<div class="duel-log"><span class="big bad">Pierdes ${d.bet.e} ${d.bet.name}. No te queda nada: TE ECHAN.</span></div>
+     <div class="btnrow"><button class="primary" id="kicked">A la calle…</button></div>`
+   :`<div class="duel-log"><span class="big bad">Pierdes ${d.bet.e} ${d.bet.name}.</span><br>«Mientras te quede algo, la silla es tuya.»</div>
+     <div class="btnrow"><button class="primary" id="stay">Seguir</button><button id="lvout">Al ascensor</button></div>`;
+ }
+ return `<div class="scene">
+  <div class="scene-art">${artMesa(S.floor)}</div>
+  <div class="mesa-body">
+   <div class="boss-zone">${bust(f,92)}<span class="bn">${f.boss}</span></div>
+   <div class="bubble">${f.devil?'«Un lanzamiento al 50 %. Tu millón contra tu vida.»':(d?(d.over?'…':'«Primero a '+f.to+'.»'):'«Esto pongo. ¿Y tú?»')}</div>
+   <div class="score">TÚ ${pips(d?d.me:0,f.to,'me')} · ${pips(d?d.opp:0,f.to,'opp')} ÉL
+     <span style="color:var(--muted);font-size:11px"> · ${Math.round(pFlip()*100)} %${S.ups.amuleto&&d?(d.amUsed?' · 🐕✗':' · 🐕'):''}</span></div>
+   <div class="table3d">${myCard}
+     <div class="coin-scene"><div class="coin" id="coin"><div class="face">C</div><div class="face back">X</div></div></div>
+     ${hisCard}</div>
+   ${bottom}
+  </div></div>`;
+}
+
+// ================= ACCIONES =================
+function bind(){
+ const on=(sel,fn)=>{document.querySelectorAll(sel).forEach(el=>el.addEventListener('click',fn))};
+ on('#rob',rob);
+ on('#toclub',()=>{S.loc='club';render()});
+ on('#tocalle',()=>{S.loc='calle';render()});
+ on('#toclub2',()=>{S.loc='club';S.duel=null;S.stake=null;render()});
+ on('[data-sell]',e=>{const i=+e.currentTarget.dataset.sell;const it=S.inv.splice(i,1)[0];
+   S.money+=it.val;S.stats.earned+=it.val;fx('+'+fmt(it.val)+' €','#6cbd93');
+   log(`Vendido ${it.e} · ${fmt(it.val)} €.`,'gold');render()});
+ on('[data-buycoin]',()=>{S.money-=COIN_PRICES[S.coinLvl];S.coinLvl++;
+   fx('🪙 '+COIN_NAMES[S.coinLvl],'#e6a94f');log(`Tu moneda: ${COIN_NAMES[S.coinLvl]} (+${S.coinLvl*5} %).`,'gold');render()});
+ on('[data-buyup]',e=>{const k=e.currentTarget.dataset.buyup;S.money-=UPGRADES[k].price;S.ups[k]=true;
+   log(`Compras: ${UPGRADES[k].name}.`,'gold');render()});
+ on('[data-floor]',e=>{const i=+e.currentTarget.dataset.floor;rideElevator(i)});
+ on('[data-bet]',e=>{const i=+e.currentTarget.dataset.bet;const it=S.inv.splice(i,1)[0];
+   S.duel={bet:it,me:0,opp:0,busy:false,over:null,amUsed:false,msg:null};S.stats.duels++;render()});
+ on('[data-call]',e=>flip(e.currentTarget.dataset.call));
+ on('#retire',()=>{const b=S.duel.bet;if(S.money<b.val)return;
+   S.money-=b.val;S.inv.push(b);S.duel=null;S.stake=null;S.loc='club';
+   fx('−'+fmt(b.val)+' €','#ff4a2f');
+   log(`Pagas ${fmt(b.val)} € y te retiras con ${b.e} ${b.name}.`,'');render()});
+ on('#again',()=>{S.duel=null;S.stake=makeStake(S.floor);render()});
+ on('#wonout',()=>{S.loc='club';S.duel=null;S.stake=null;render()});
+ on('#stay',()=>{S.duel=null;render()});
+ on('#lvout',()=>{S.loc='club';S.duel=null;S.stake=null;render()});
+ on('#kicked',()=>{S.loc='calle';S.duel=null;S.stake=null;render()});
+ on('[data-close]',e=>{$('#'+e.currentTarget.dataset.close).classList.remove('show')});
+ $('#lab-open').onclick=()=>$('#ov-lab').classList.add('show');
+ $('#nostorage').style.display=storageOK?'none':'block';
+ $('#code-open').onclick=()=>{$('#code-out').value=encSave();$('#code-msg').textContent='';$('#ov-code').classList.add('show')};
+ $('#code-copy').onclick=()=>{const t=$('#code-out');t.select();t.setSelectionRange(0,999999);
+   try{navigator.clipboard.writeText(t.value);$('#code-msg').textContent='Copiado ✓'}catch(e){document.execCommand('copy');$('#code-msg').textContent='Copiado ✓'}};
+ $('#code-load').onclick=()=>{try{S=decSave($('#code-in').value);save();$('#ov-code').classList.remove('show');render()}
+   catch(e){$('#code-msg').textContent='Código no válido'}};
+ $('#reset').onclick=()=>{if(confirm('¿Reiniciar toda la partida?')){try{localStorage.removeItem('hot-sim-v3')}catch(e){}S=structuredClone(FRESH);render()}};
+ $('#lab-run').onclick=runLab;
+}
+function rideElevator(i){
+ const el=$('#elev');el.style.display='block';
+ requestAnimationFrame(()=>el.classList.add('closed'));
+ const from=S.loc==='mesa'?FLOORS[S.floor].f:0;
+ let cur=from;const target=FLOORS[i].f;
+ $('#elev-no').textContent=(cur===0?'0':'−'+cur);
+ const tick=setInterval(()=>{cur++;if(cur>target){clearInterval(tick);return}
+   $('#elev-no').textContent='−'+cur},350);
+ setTimeout(()=>{
+  S.floor=i;S.loc='mesa';S.duel=null;S.stake=makeStake(i);render();
+  el.classList.remove('closed');
+  setTimeout(()=>{el.style.display='none'},1000);
+ },1100+Math.max(0,target-from)*300);
+}
+function rob(){
+ const total=NPCS.reduce((a,n)=>a+n.w,0);let r=Math.random()*total,npc=NPCS[0];
+ for(const n of NPCS){if(r<n.w){npc=n;break}r-=n.w}
+ const c=streetCeil();
+ const off=Array.isArray(npc.off)?npc.off[rnd(0,npc.off.length-1)]:npc.off;
+ const it=makeItem(Math.max(1,c-off),npc.high);
+ S.inv.push(it);S.stats.robbed++;
+ fx(it.e+' +'+fmt(it.val)+' €','#6cbd93');
+ log(`Palazo a ${npc.name}: ${it.e} ${fmt(it.val)} €.`,'good');
+ const b=$('#rob');if(b){b.disabled=true;setTimeout(render,650)}else render();
+}
+function flip(call){
+ const d=S.duel,f=FLOORS[S.floor];if(!d||d.busy||d.over)return;
+ const p=pFlip();
+ const hit=Math.random()<p;
+ let canto=false,amuleto=false;
+ if(!f.devil){
+  if(!hit&&S.ups.canto&&Math.random()<0.05)canto=true;
+  if(!hit&&!canto&&S.ups.amuleto&&!d.amUsed&&d.opp+1>=f.to){amuleto=true;d.amUsed=true}
+ }
+ const side=hit?call:(call==='cara'?'cruz':'cara');
+ d.busy=true;
+ const coin=$('#coin'); // giro rápido hasta la cara resultante
+ if(coin){coin.style.transition='';void coin.offsetWidth;coin.style.transform=`rotateY(${720+(side==='cruz'?180:0)}deg)`}
+ setTimeout(()=>{
+  if(S.duel!==d)return; // el duelo terminó o se abandonó durante el giro
+  if(canto){d.msg=`¡De canto! Se repite.`}
+  else if(amuleto){d.msg=`El collar brilla: se repite. 🐕`}
+  else if(hit){d.me++;d.msg=`¡${side.toUpperCase()}! Punto para ti.`;fx('●','#6cbd93')}
+  else{d.opp++;d.msg=`${side.toUpperCase()}. Punto para él.`;fx('●','#ff4a2f')}
+  d.busy=false;
+  if(d.me>=f.to){winDuel()}
+  else if(d.opp>=f.to){loseDuel()}
+  else render();
+  const c2=$('#coin'); // dejar la cara resultante a la vista tras el render
+  if(c2){c2.style.transition='none';c2.style.transform=side==='cruz'?'rotateY(180deg)':'rotateY(0)'}
+ },360);
+}
+function winDuel(){
+ const d=S.duel,f=FLOORS[S.floor],fi=S.floor;const prize=S.stake;
+ d.over='win';
+ if(f.devil){ // final del juego
+  S.inv.push(d.bet);S.stats.wins++;S.losses=0;
+  log('CARA O CRUZ: da igual. Le has ganado al Diablo.','gold');
+  flash('flash-win');render();
+  $('#ov-result-in').innerHTML=`<div class="bigmsg gold">RECUPERAS TU VIDA</div>
+   <div style="text-align:center;font-size:52px;margin:6px 0">🌅</div>
+   <p style="text-align:center;font-size:14px;color:var(--muted)"><strong>Has completado HELL OR TAILS.</strong><br>Suena un despertador. Huele a café. Un perro ladra en el pasillo.<br>El callejón ya no está donde estaba.</p>
+   <p style="text-align:center;font-family:var(--font-mono);font-size:12px;color:var(--gold)">palazos: ${S.stats.robbed} · duelos ganados: ${S.stats.wins}/${S.stats.duels} · vendido: ${fmt(S.stats.earned)} €</p>
+   <div class="btnrow"><button class="primary" id="ngplus">Seguir jugando</button></div>`;
+  $('#ov-result').classList.add('show');
+  $('#ngplus').onclick=()=>{$('#ov-result').classList.remove('show');S.loc='club';S.duel=null;S.stake=null;render()};
+  return;
+ }
+ d.prize=prize;
+ S.inv.push(d.bet);S.inv.push(prize);
+ S.stats.wins++;S.losses=0;
+ d.unlock=null;
+ if(fi<9&&!S.unlocked[fi+1]){S.unlocked[fi+1]=true;
+   const devilNext=FLOORS[fi+1].devil;
+   d.unlock=devilNext?'🔥 En el panel se enciende un botón SIN NÚMERO, al rojo vivo.':`🛗 ¡DING! Botón nuevo en el ascensor: piso −${fi+2}.`;
+   log(d.unlock,devilNext?'bad':'gold')}
+ log(`Ganas en el −${f.f}: +${prize.e} ${fmt(prize.val)} €.`,'good');
+ flash('flash-win');
+ render();
+}
+function loseDuel(){
+ const d=S.duel,f=FLOORS[S.floor];
+ if(f.devil){ // perder contra el Diablo: se pierde TODO
+  flash('shake');flash('flash-lose');
+  S=structuredClone(FRESH);
+  save();render();
+  $('#ov-result-in').innerHTML=`<div class="bigmsg">EL DIABLO SONRÍE</div>
+   <p style="text-align:center;font-size:14px;color:var(--muted)">«Todo.»<br>Objetos, dinero, tu moneda, los pisos. Todo se queda en su vitrina.</p>
+   <div class="btnrow"><button class="primary" id="devilreset">Despiertas en la calle…</button></div>`;
+  $('#ov-result').classList.add('show');
+  $('#devilreset').onclick=()=>{$('#ov-result').classList.remove('show');render()};
+  return;
+ }
+ d.over='lose';S.losses++;
+ d.kicked=S.inv.length===0;
+ log(`Pierdes ${d.bet.e} ${d.bet.name}.${d.kicked?' Te echan.':''}`,'bad');
+ flash('shake');flash('flash-lose');
+ render();
+}
+
+// ================= LABORATORIO =================
+const labFloor=$('#lab-floor');
+FLOORS.forEach((f,i)=>{if(f.devil)return;const o=document.createElement('option');o.value=i;o.textContent=`−${f.f} (primero a ${f.to})`;if(i===4)o.selected=true;labFloor.appendChild(o)});
+const labCoin=$('#lab-coin');
+for(let c=0;c<=10;c++){const o=document.createElement('option');o.value=c;o.textContent=`Nv ${c} (+${c*5}%)`;if(c===0)o.selected=true;labCoin.appendChild(o)}
+function runLab(){
+ const fi=+labFloor.value,cl=+$('#lab-coin').value,f=FLOORS[fi];
+ const theo=duelWin(fi,cl),p=pForTarget(theo,f.to),N=f.to,RUNS=20000;
+ let wins=0;
+ for(let r=0;r<RUNS;r++){let me=0,op=0;while(me<N&&op<N){Math.random()<p?me++:op++}if(me>=N)wins++}
+ const emp=wins/RUNS;
+ const bet=tierAvg(f.betTier),stake=prizeMin(fi)+5;
+ const ev=emp*stake-(1-emp)*bet;
+ $('#lab-out').innerHTML=
+`piso −${f.f} · p = ${(p*100).toFixed(0)} % · ${RUNS.toLocaleString('es-ES')} duelos
+victoria empírica:  <b>${(emp*100).toFixed(2)} %</b>
+victoria teórica:   <b>${(theo*100).toFixed(2)} %</b>
+apuestas medias:    tú ${fmt(Math.round(bet))} € · él ${fmt(Math.round(stake))} €
+EV por duelo:       <b>${ev>=0?'+':''}${fmt(Math.round(ev))} €</b>`;
+}
+render();
+</script>
