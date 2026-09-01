@@ -261,7 +261,7 @@
       <button id="code-open">💾 código</button>
       <button id="lab-open">🧪 lab</button>
       <button id="reset">⟲</button>
-      <span class="chip" style="color:var(--muted)">v21</span>
+      <span class="chip" style="color:var(--muted)">v22</span>
     </div>
   </header>
 
@@ -405,22 +405,17 @@ function pFlip(){const f=FLOORS[S.floor];if(f.devil)return 0.5;
  if(S.floor===0&&S.losses>=3)t=Math.min(1,t+0.10);
  return pForTarget(t,f.to)}
 function streetCeil(){let d=0;S.unlocked.forEach((u,i)=>{if(u)d=i});return Math.min(6,1+Math.max(0,d-3))}
-function inPlay(){const s=new Set(S.inv.map(i=>i.name));
- if(S.stake)s.add(S.stake.name);if(S.duel&&S.duel.bet)s.add(S.duel.bet.name);return s}
 const toItem=(x,t)=>({name:x[0],e:x[1],tier:t,val:x[2]});
 function makeItem(t,high){
- const tt=TIERS[t-1],used=inPlay();
- let pool=tt.items.filter(x=>!used.has(x[0]));
- if(!pool.length)pool=tt.items; // catálogo agotado: se permite repetir
+ const tt=TIERS[t-1];
+ let pool=tt.items;
  if(high&&pool.length>1){const s=[...pool].sort((a,b)=>a[2]-b[2]);pool=s.slice(Math.floor(s.length/2))}
  return toItem(pool[rnd(0,pool.length-1)],tt.n)}
 function makeStake(i){
  if(FLOORS[i].devil)return{name:'Tu antigua vida',e:'🌅',tier:'∞',val:0,life:true};
  const pm=prizeMin(i);
  let t=TIERS[0];for(const x of TIERS)if(pm>=x.min)t=x;
- let pool=t.items.filter(x=>x[2]>=pm&&x[2]<=pm+10); // objetos-billete del catálogo
- const used=inPlay(),free=pool.filter(x=>!used.has(x[0]));
- if(free.length)pool=free;
+ const pool=t.items.filter(x=>x[2]>=pm&&x[2]<=pm+10); // objetos-billete del catálogo
  return toItem(pool[rnd(0,pool.length-1)],t.n)}
 function probWin(p,N){let s=0;for(let j=0;j<N;j++)s+=C(N-1+j,j)*Math.pow(p,N)*Math.pow(1-p,j);return s}
 function C(n,k){let r=1;for(let i=1;i<=k;i++)r=r*(n-k+i)/i;return r}
