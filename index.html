@@ -261,7 +261,7 @@
       <button id="code-open">💾 código</button>
       <button id="lab-open">🧪 lab</button>
       <button id="reset">⟲</button>
-      <span class="chip" style="color:var(--muted)">v20</span>
+      <span class="chip" style="color:var(--muted)">v21</span>
     </div>
   </header>
 
@@ -602,7 +602,7 @@ function viewMesa(){
    <div class="boss-zone">${bust(f,92)}<span class="bn">${f.boss}</span></div>
    <div class="bubble">${f.devil?'«Un lanzamiento al 50 %. Tu millón contra tu vida.»':(d?(d.over?'…':'«Primero a '+f.to+'.»'):'«Esto pongo. ¿Y tú?»')}</div>
    <div class="score">TÚ ${pips(d?d.me:0,f.to,'me')} · ${pips(d?d.opp:0,f.to,'opp')} ÉL
-     <span style="color:var(--muted);font-size:11px"> · ${Math.round(pFlip()*100)} %${S.ups.amuleto&&d?(d.amUsed?' · 🐕✗':' · 🐕'):''}</span></div>
+     <span style="color:var(--muted);font-size:11px"> · ${Math.round(duelWin(S.floor,S.coinLvl)*100)} %${S.ups.amuleto&&d?(d.amUsed?' · 🐕✗':' · 🐕'):''}</span></div>
    <div class="table3d">${myCard}
      <div class="coin-scene"><div class="coin" id="coin"><div class="face">C</div><div class="face back">X</div></div></div>
      ${hisCard}</div>
