@@ -1,3 +1,8 @@
+﻿<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Simulador Hell or Tails</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rye&family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
@@ -200,7 +205,7 @@
     #elev .door{transition:none}
   }
 
-  /* ---------- móvil ---------- */
+  /* ---------- mÃ³vil ---------- */
   @media (max-width:560px){
     body{font-size:14px}
     .wrap{padding:0 8px}
@@ -232,50 +237,52 @@
   }
 </style>
 
+</head>
+<body>
 <div class="wrap">
   <header>
     <h1 class="sign">HELL OR TAILS</h1>
     <div class="hud">
-      <span class="chip">💰 <b id="hud-money">0</b> €</span>
-      <span class="chip">🪙 nv <b id="hud-coin">0</b> (<b id="hud-bonus">+0 %</b>)</span>
-      <span class="chip">🏙️ calle <b id="hud-street">T1</b></span>
-      <button id="code-open">💾 código</button>
-      <button id="lab-open">🧪 lab</button>
-      <button id="reset">⟲</button>
-      <span class="chip" style="color:var(--muted)">v16</span>
+      <span class="chip">ðŸ’° <b id="hud-money">0</b> â‚¬</span>
+      <span class="chip">ðŸª™ nv <b id="hud-coin">0</b> (<b id="hud-bonus">+0 %</b>)</span>
+      <span class="chip">ðŸ™ï¸ calle <b id="hud-street">T1</b></span>
+      <button id="code-open">ðŸ’¾ cÃ³digo</button>
+      <button id="lab-open">ðŸ§ª lab</button>
+      <button id="reset">âŸ²</button>
+      <span class="chip" style="color:var(--muted)">v17</span>
     </div>
   </header>
 
   <div id="stage">
-    <div id="nostorage" style="display:none;background:#3a0d08;color:#ffb59a;font-size:12px;padding:6px 12px;text-align:center;font-family:var(--font-mono)">⚠️ Este navegador no guarda la partida (modo privado o datos bloqueados): al recargar se pierde. Usa 💾 código para guardarla a mano.</div>
+    <div id="nostorage" style="display:none;background:#3a0d08;color:#ffb59a;font-size:12px;padding:6px 12px;text-align:center;font-family:var(--font-mono)">âš ï¸ Este navegador no guarda la partida (modo privado o datos bloqueados): al recargar se pierde. Usa ðŸ’¾ cÃ³digo para guardarla a mano.</div>
     <main id="app"></main>
     <div id="log" class="log"></div>
 
-    <div id="elev"><div class="floorno" id="elev-no">·</div><div class="door dl"></div><div class="door dr"></div></div>
+    <div id="elev"><div class="floorno" id="elev-no">Â·</div><div class="door dl"></div><div class="door dr"></div></div>
 
     <div class="overlay" id="ov-result"><div class="ocard" id="ov-result-in"></div></div>
 
     <div class="overlay" id="ov-code"><div class="ocard">
-      <button class="x" data-close="ov-code">✕</button>
-      <h3>💾 Código de partida</h3>
-      <p class="flavor">Copia este código para guardar tu partida y pégalo en cualquier navegador para continuarla.</p>
+      <button class="x" data-close="ov-code">âœ•</button>
+      <h3>ðŸ’¾ CÃ³digo de partida</h3>
+      <p class="flavor">Copia este cÃ³digo para guardar tu partida y pÃ©galo en cualquier navegador para continuarla.</p>
       <textarea id="code-out" readonly style="width:100%;height:70px;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:6px;font-family:var(--font-mono);font-size:10px;padding:8px"></textarea>
       <div class="btnrow" style="justify-content:flex-start"><button id="code-copy">Copiar</button></div>
       <p class="flavor" style="margin-top:14px">Cargar una partida:</p>
-      <textarea id="code-in" placeholder="pega aquí un código…" style="width:100%;height:70px;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:6px;font-family:var(--font-mono);font-size:10px;padding:8px"></textarea>
+      <textarea id="code-in" placeholder="pega aquÃ­ un cÃ³digoâ€¦" style="width:100%;height:70px;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:6px;font-family:var(--font-mono);font-size:10px;padding:8px"></textarea>
       <div class="btnrow" style="justify-content:flex-start"><button class="primary" id="code-load">Cargar</button><span id="code-msg" class="flavor" style="align-self:center"></span></div>
     </div></div>
 
     <div class="overlay" id="ov-lab"><div class="ocard">
-      <button class="x" data-close="ov-lab">✕</button>
-      <h3>🧪 Laboratorio de balance</h3>
+      <button class="x" data-close="ov-lab">âœ•</button>
+      <h3>ðŸ§ª Laboratorio de balance</h3>
       <p class="flavor">20.000 duelos simulados, moneda pura.</p>
       <div class="lab-controls">
         <label>Piso <select id="lab-floor"></select></label>
         <label>Moneda <select id="lab-coin"></select></label>
         <button id="lab-run">Simular</button>
       </div>
-      <div class="lab-out" id="lab-out">—</div>
+      <div class="lab-out" id="lab-out">â€”</div>
     </div></div>
 
     <div id="fx"></div>
@@ -286,34 +293,34 @@
 'use strict';
 // ================= DATOS (GDD v0.5) =================
 const TIERS=[
- {n:1,min:5,max:15,items:[['Lata abollada','🥫'],['Zapato viejo','👞'],['Paraguas roto','☂️'],['Revista del 98','📰'],['Botella vacía','🍾']]},
- {n:2,min:20,max:50,items:[['Radio vieja','📻'],['Cartera','👛'],['Reloj de plástico','⏰'],['Patinete oxidado','🛴']]},
- {n:3,min:75,max:200,items:[['Teléfono','📱'],['Cadena de plata','⛓️'],['Altavoz','🔊'],['Monopatín','🛹']]},
- {n:4,min:300,max:800,items:[['Reloj de oro','⌚'],['Portátil','💻'],['Guitarra eléctrica','🎸'],['Cámara réflex','📷']]},
- {n:5,min:1200,max:3000,items:[['Joyas','💍'],['Lingote pequeño','🪙'],['Cuadro','🖼️'],['Abrigo de pieles','🧥']]},
- {n:6,min:5000,max:12000,items:[['Maletín cerrado','💼'],['Estatuilla de museo','🗿'],['Llaves de un deportivo','🔑']]},
- {n:7,min:20000,max:50000,items:[['Deportivo (papeles falsos)','🏎️'],['Obra maestra robada','🎨'],['Caja de relojes suizos','⌚']]},
- {n:8,min:75000,max:200000,items:[['Escrituras de un rascacielos','🏢'],['Diamante «Ojo de Cabra»','💎'],['Contenedor del puerto','📦']]},
- {n:9,min:300000,max:800000,items:[['Un yate','🛥️'],['La deuda de un senador','📜'],['Una isla (en papeles)','🏝️']]},
+ {n:1,min:5,max:15,items:[['Lata abollada','ðŸ¥«'],['Zapato viejo','ðŸ‘ž'],['Paraguas roto','â˜‚ï¸'],['Revista del 98','ðŸ“°'],['Botella vacÃ­a','ðŸ¾']]},
+ {n:2,min:20,max:50,items:[['Radio vieja','ðŸ“»'],['Cartera','ðŸ‘›'],['Reloj de plÃ¡stico','â°'],['Patinete oxidado','ðŸ›´']]},
+ {n:3,min:75,max:200,items:[['TelÃ©fono','ðŸ“±'],['Cadena de plata','â›“ï¸'],['Altavoz','ðŸ”Š'],['MonopatÃ­n','ðŸ›¹']]},
+ {n:4,min:300,max:800,items:[['Reloj de oro','âŒš'],['PortÃ¡til','ðŸ’»'],['Guitarra elÃ©ctrica','ðŸŽ¸'],['CÃ¡mara rÃ©flex','ðŸ“·']]},
+ {n:5,min:1200,max:3000,items:[['Joyas','ðŸ’'],['Lingote pequeÃ±o','ðŸª™'],['Cuadro','ðŸ–¼ï¸'],['Abrigo de pieles','ðŸ§¥']]},
+ {n:6,min:5000,max:12000,items:[['MaletÃ­n cerrado','ðŸ’¼'],['Estatuilla de museo','ðŸ—¿'],['Llaves de un deportivo','ðŸ”‘']]},
+ {n:7,min:20000,max:50000,items:[['Deportivo (papeles falsos)','ðŸŽï¸'],['Obra maestra robada','ðŸŽ¨'],['Caja de relojes suizos','âŒš']]},
+ {n:8,min:75000,max:200000,items:[['Escrituras de un rascacielos','ðŸ¢'],['Diamante Â«Ojo de CabraÂ»','ðŸ’Ž'],['Contenedor del puerto','ðŸ“¦']]},
+ {n:9,min:300000,max:800000,items:[['Un yate','ðŸ›¥ï¸'],['La deuda de un senador','ðŸ“œ'],['Una isla (en papeles)','ðŸï¸']]},
 ];
 const FLOORS=[
  {f:1,to:1,handicap:0.00,betTier:1,boss:'El Trilero',    coat:'#7a5a34',skin:'#d9a06b',hat:1,amb:'Una trastienda con una mesa coja.'},
  {f:2,to:2,handicap:0.05,betTier:2,boss:'La Viuda',      coat:'#5c3a66',skin:'#e0b58a',hat:2,amb:'Terciopelo rojo y humo dulce.'},
- {f:3,to:3,handicap:0.10,betTier:3,boss:'El Sepulturero',coat:'#4a4f57',skin:'#c9c2b4',hat:1,amb:'Piedra fría y antorchas.'},
+ {f:3,to:3,handicap:0.10,betTier:3,boss:'El Sepulturero',coat:'#4a4f57',skin:'#c9c2b4',hat:1,amb:'Piedra frÃ­a y antorchas.'},
  {f:4,to:4,handicap:0.15,betTier:4,boss:'La Ceniza',     coat:'#6e2f22',skin:'#b87d6a',amb:'El suelo cruje con grietas de lava.'},
  {f:5,to:5,handicap:0.20,betTier:5,boss:'El Notario',    coat:'#23252b',skin:'#d9a06b',glasses:1,amb:'Esto ya no parece un club.'},
  {f:6,to:6,handicap:0.25,betTier:6,boss:'El Coleccionista',coat:'#2f5d47',skin:'#d9a06b',glasses:1,amb:'Las Profundidades. Hace calor.'},
  {f:7,to:7,handicap:0.30,betTier:7,boss:'La Sombra',     coat:'#17141a',skin:'#241f28',gold_eyes:1,amb:'La luz no llega al techo.'},
- {f:8,to:8,handicap:0.35,betTier:8,boss:'El Socio',      coat:'#b9af9c',skin:'#e8d6c0',amb:'Aquí las paredes respiran.'},
+ {f:8,to:8,handicap:0.35,betTier:8,boss:'El Socio',      coat:'#b9af9c',skin:'#e8d6c0',amb:'AquÃ­ las paredes respiran.'},
  {f:9,to:8,handicap:0.40,betTier:9,boss:'Don Azufre',    coat:'#7e1a0e',skin:'#c8553a',horns:1,amb:'El fondo. O casi.'},
- {f:10,to:1,handicap:0,betTier:9,mb:1200000,devil:1,boss:'El Diablo',coat:'#1a0505',skin:'#c8553a',horns:1,gold_eyes:1,amb:'La sala del millón.'},
+ {f:10,to:1,handicap:0,betTier:9,mb:1200000,devil:1,boss:'El Diablo',coat:'#1a0505',skin:'#c8553a',horns:1,gold_eyes:1,amb:'La sala del millÃ³n.'},
 ];
 const COIN_PRICES=[100,150,350,900,2500,6000,15000,35000,90000,250000]; // acum: 100/250/600/1.500/4.000/10.000/25.000/60.000/150.000/400.000
-const COIN_NAMES=['Céntimo oxidado','Céntimo pulido','De latón','De plata','Plata grabada','De oro','Oro grabado','Con un rubí','Grabado demoníaco','Con fuego dentro','Doblón infernal'];
+const COIN_NAMES=['CÃ©ntimo oxidado','CÃ©ntimo pulido','De latÃ³n','De plata','Plata grabada','De oro','Oro grabado','Con un rubÃ­','Grabado demonÃ­aco','Con fuego dentro','DoblÃ³n infernal'];
 const UPGRADES={
  canto:{name:'Canto de plomo',price:1500,desc:'5% de que un fallo caiga de canto: se repite.'},
- pies:{name:'Pies fríos',price:5000,desc:'Retírate cuando quieras pagando el valor de tu objeto.'},
- amuleto:{name:'Amuleto de perro',price:25000,desc:'1 vez por duelo: un fallo letal se repite. 🐕'},
+ pies:{name:'Pies frÃ­os',price:5000,desc:'RetÃ­rate cuando quieras pagando el valor de tu objeto.'},
+ amuleto:{name:'Amuleto de perro',price:25000,desc:'1 vez por duelo: un fallo letal se repite. ðŸ•'},
 };
 const NPCS=[
  {name:'un mendigo',w:30,off:1},{name:'un jubilado',w:25,off:[1,0]},
@@ -327,7 +334,7 @@ const FRESH={loc:'calle',money:0,coinLvl:0,ups:{canto:false,amuleto:false,pies:f
  duel:null,stake:null,floor:0,losses:0,
  stats:{robbed:0,duels:0,wins:0,earned:0},log:[]};
 let S=load();
-// código de partida (unicode-safe base64)
+// cÃ³digo de partida (unicode-safe base64)
 function encSave(){return btoa(unescape(encodeURIComponent(JSON.stringify(S))))}
 function decSave(t){const o=JSON.parse(decodeURIComponent(escape(atob(t.trim()))));
  if(!o||!Array.isArray(o.inv)||!Array.isArray(o.unlocked))throw new Error('bad');return o}
@@ -337,19 +344,19 @@ function load(){
   const old=localStorage.getItem('hot-sim-v3');
   if(r){
    const s=JSON.parse(r);
-   // partida nueva sin tocar + partida antigua huérfana → rescatar la antigua
+   // partida nueva sin tocar + partida antigua huÃ©rfana â†’ rescatar la antigua
    if(old&&s.stats&&s.stats.duels===0&&s.stats.robbed===0&&s.money===0){
     const o=JSON.parse(old);localStorage.removeItem('hot-sim-v3');return o}
    return s;
   }
   if(old){const o=JSON.parse(old);localStorage.removeItem('hot-sim-v3');return o}
  }catch(e){}
- try{ // rescate desde la URL (enlaces compartidos con almacén vacío en cada carga)
+ try{ // rescate desde la URL (enlaces compartidos con almacÃ©n vacÃ­o en cada carga)
   const m=location.hash.match(/#s=(.+)/);
   if(m)return decSave(decodeURIComponent(m[1]));
  }catch(e){}
  return structuredClone(FRESH)}
-// la partida también viaja en la URL, con cuentagotas para no saturar el historial
+// la partida tambiÃ©n viaja en la URL, con cuentagotas para no saturar el historial
 let lastHash=0;
 function writeHash(force){
  try{
@@ -362,7 +369,7 @@ function writeHash(force){
 function save(){try{localStorage.setItem('hot-sim-v4',JSON.stringify(S))}catch(e){} writeHash(false)}
 window.addEventListener('pagehide',()=>writeHash(true));
 window.addEventListener('beforeunload',()=>writeHash(true));
-// detección de almacenamiento roto (incógnito / datos bloqueados / vista aislada)
+// detecciÃ³n de almacenamiento roto (incÃ³gnito / datos bloqueados / vista aislada)
 let storageOK=false;
 try{localStorage.setItem('hot-probe','1');storageOK=localStorage.getItem('hot-probe')==='1';localStorage.removeItem('hot-probe')}catch(e){}
 
@@ -373,10 +380,10 @@ const fmt=n=>n.toLocaleString('es-ES');
 const tierAvg=t=>(TIERS[t-1].min+TIERS[t-1].max)/2;
 const minBet=f=>f.mb||TIERS[f.betTier-1].min;
 const prizeMin=i=>i<FLOORS.length-1?minBet(FLOORS[i+1]):1200000;
-// prob. de ganar el DUELO: 55% + 5 pts × (nivel − piso), siempre decreciente al bajar
+// prob. de ganar el DUELO: 55% + 5 pts Ã— (nivel âˆ’ piso), siempre decreciente al bajar
 function duelWin(i,lvl){const f=FLOORS[i];if(f.devil)return 0.5;
  return Math.min(1,Math.max(0.02,0.55+0.05*(lvl-f.f)))}
-// moneda por lanzamiento derivada de la prob. objetivo del duelo (bisección)
+// moneda por lanzamiento derivada de la prob. objetivo del duelo (bisecciÃ³n)
 function pForTarget(t,N){if(t>=1)return 1;if(t<=0.001)return 0.001;
  let lo=0.001,hi=0.999;for(let k=0;k<40;k++){const m=(lo+hi)/2;probWin(m,N)>t?hi=m:lo=m}
  return (lo+hi)/2}
@@ -390,7 +397,7 @@ function makeItem(t,high){const tt=TIERS[t-1];const [name,e]=pickItem(t);
  const lo=high?Math.round((tt.min+tt.max)/2):tt.min;
  return{name,e,tier:t,val:rnd(lo,tt.max)}}
 function makeStake(i){
- if(FLOORS[i].devil)return{name:'Tu antigua vida',e:'🌅',tier:'∞',val:0,life:true};
+ if(FLOORS[i].devil)return{name:'Tu antigua vida',e:'ðŸŒ…',tier:'âˆž',val:0,life:true};
  const val=prizeMin(i)+rnd(0,10);
  let t=TIERS[0];for(const x of TIERS)if(val>=x.min)t=x;
  const [name,e]=pickItem(t.n);return{name,e,tier:t.n,val}}
@@ -441,12 +448,12 @@ function artClub(){return `<svg class="art" viewBox="0 0 800 150" preserveAspect
  <rect y="120" width="800" height="30" fill="#3a1219"/>
  <path d="M380,0 L420,0 L414,26 L386,26 Z" fill="#191008"/><ellipse cx="400" cy="30" rx="26" ry="8" fill="#ffdf9e" opacity=".65"/>
  <rect x="60" y="46" width="150" height="74" rx="6" fill="#1c1410" stroke="#3b2c21"/>
- <text x="135" y="90" text-anchor="middle" fill="#a5917d" font-size="13" font-family="monospace">COMPRA·VENTA</text>
+ <text x="135" y="90" text-anchor="middle" fill="#a5917d" font-size="13" font-family="monospace">COMPRAÂ·VENTA</text>
  <rect x="590" y="40" width="150" height="80" rx="6" fill="#1c1410" stroke="#3b2c21"/>
- <text x="665" y="66" text-anchor="middle" font-size="16">🪙</text><text x="665" y="88" text-anchor="middle" font-size="16">🐕</text><text x="665" y="110" text-anchor="middle" font-size="16">🥶</text>
+ <text x="665" y="66" text-anchor="middle" font-size="16">ðŸª™</text><text x="665" y="88" text-anchor="middle" font-size="16">ðŸ•</text><text x="665" y="110" text-anchor="middle" font-size="16">ðŸ¥¶</text>
  <rect x="345" y="46" width="110" height="104" fill="#241a10" stroke="#6d5326" stroke-width="3"/>
  <line x1="400" y1="46" x2="400" y2="150" stroke="#6d5326" stroke-width="3"/>
- <text x="400" y="40" text-anchor="middle" fill="#e6a94f" font-size="11" font-family="monospace">▼ ASCENSOR ▼</text>
+ <text x="400" y="40" text-anchor="middle" fill="#e6a94f" font-size="11" font-family="monospace">â–¼ ASCENSOR â–¼</text>
 </svg>`}
 function artMesa(fi){const t=fi/(FLOORS.length-1);
  const top=`hsl(${18-t*14},${45+t*30}%,${16-t*8}%)`,glow=t>0.4?'#ff4a2f':'#e6a94f';
@@ -456,7 +463,7 @@ function artMesa(fi){const t=fi/(FLOORS.length-1);
  <radialGradient id="g2" cx="50%" cy="100%" r="100%"><stop offset="0%" stop-color="${glow}" stop-opacity=".28"/><stop offset="70%" stop-color="#000" stop-opacity=".25"/></radialGradient></defs>
  ${fi>=2?`<path d="M60,150 L90,70 L120,150 Z" fill="#000" opacity=".3"/><path d="M680,150 L710,60 L740,150 Z" fill="#000" opacity=".3"/>`:''}
  ${fi>=3?[...Array(6)].map((_,i)=>`<path d="M${80+i*130},150 q10,-${20+i*4} 22,0 Z" fill="#ff4a2f" opacity=".5"/>`).join(''):''}
- <text x="400" y="34" text-anchor="middle" fill="#ffd9c4" opacity=".8" font-size="13" font-family="monospace" letter-spacing="6">PISO −${FLOORS[fi].f}</text>
+ <text x="400" y="34" text-anchor="middle" fill="#ffd9c4" opacity=".8" font-size="13" font-family="monospace" letter-spacing="6">PISO âˆ’${FLOORS[fi].f}</text>
 </svg>`}
 
 // ================= RENDER =================
@@ -477,8 +484,8 @@ function slots(mode){
  const n=Math.max(6,S.inv.length);
  for(let i=0;i<n;i++){
   const it=S.inv[i];
-  if(!it){h+='<div class="slot empty"><span class="e">·</span></div>';continue}
-  const inner=`<span class="tb">T${it.tier}</span><span class="e">${it.e}</span><span class="n">${it.name}</span><span class="v">${fmt(it.val)} €</span>`;
+  if(!it){h+='<div class="slot empty"><span class="e">Â·</span></div>';continue}
+  const inner=`<span class="tb">T${it.tier}</span><span class="e">${it.e}</span><span class="n">${it.name}</span><span class="v">${fmt(it.val)} â‚¬</span>`;
   if(mode==='sell')h+=`<button class="slot" data-sell="${i}">${inner}<span class="act sell">VENDER</span></button>`;
   else if(mode==='bet'){const ok=it.val>=minBet(FLOORS[S.floor]);
    h+=`<button class="slot" data-bet="${i}" ${ok?'':'disabled'}>${inner}${ok?'<span class="act">APOSTAR</span>':''}</button>`}
@@ -491,34 +498,34 @@ function viewCalle(){
  return `<div class="scene">
   <div class="scene-art">${artCalle()}</div>
   <div class="scene-body">
-   <h2 class="scene-title"><span class="loc">La calle · noche</span></h2>
+   <h2 class="scene-title"><span class="loc">La calle Â· noche</span></h2>
    <p class="flavor" style="text-align:center">La calle da hasta Tier ${streetCeil()}.</p>
    <div class="btnrow">
-     <button class="primary bigact" id="rob" ${S.inv.length>=6?'disabled':''}>🏏 PALAZO</button>
-     <button class="doorbtn" id="toclub"><span class="ico">🚪</span>Al club</button>
+     <button class="primary bigact" id="rob" ${S.inv.length>=6?'disabled':''}>ðŸ PALAZO</button>
+     <button class="doorbtn" id="toclub"><span class="ico">ðŸšª</span>Al club</button>
    </div>
    ${S.inv.length>=6?'<p class="flavor" style="text-align:center;margin-top:8px">Bolsillos llenos.</p>':''}
    ${slots('none')}
   </div></div>`;
 }
 function viewClub(){
- const coinRow=`<div class="shop-row"><span>🪙 Tu moneda: <strong>${COIN_NAMES[S.coinLvl]}</strong> <span class="desc">nivel ${S.coinLvl} de 10 · +${S.coinLvl*5} %</span></span></div>`+(S.coinLvl<10
-  ?`<div class="shop-row"><span>⬆️ ${COIN_NAMES[S.coinLvl+1]} <span class="desc">nivel ${S.coinLvl+1} · +${(S.coinLvl+1)*5} %</span></span>
-    <span class="price">${fmt(COIN_PRICES[S.coinLvl])} €</span>
+ const coinRow=`<div class="shop-row"><span>ðŸª™ Tu moneda: <strong>${COIN_NAMES[S.coinLvl]}</strong> <span class="desc">nivel ${S.coinLvl} de 10 Â· +${S.coinLvl*5} %</span></span></div>`+(S.coinLvl<10
+  ?`<div class="shop-row"><span>â¬†ï¸ ${COIN_NAMES[S.coinLvl+1]} <span class="desc">nivel ${S.coinLvl+1} Â· +${(S.coinLvl+1)*5} %</span></span>
+    <span class="price">${fmt(COIN_PRICES[S.coinLvl])} â‚¬</span>
     <button data-buycoin ${S.money>=COIN_PRICES[S.coinLvl]?'':'disabled'}>Subir</button></div>`
-  :`<div class="shop-row"><span class="desc">Arde al girar. No existe nada mejor.</span><span class="owned">MÁXIMO</span></div>`);
+  :`<div class="shop-row"><span class="desc">Arde al girar. No existe nada mejor.</span><span class="owned">MÃXIMO</span></div>`);
  const upRows=Object.entries(UPGRADES).map(([k,u])=>S.ups[k]
-  ?`<div class="shop-row"><span>${u.name} <span class="desc">${u.desc}</span></span><span class="owned">✓</span></div>`
-  :`<div class="shop-row"><span>${u.name} <span class="desc">${u.desc}</span></span><span class="price">${fmt(u.price)} €</span><button data-buyup="${k}" ${S.money>=u.price?'':'disabled'}>Comprar</button></div>`).join('');
+  ?`<div class="shop-row"><span>${u.name} <span class="desc">${u.desc}</span></span><span class="owned">âœ“</span></div>`
+  :`<div class="shop-row"><span>${u.name} <span class="desc">${u.desc}</span></span><span class="price">${fmt(u.price)} â‚¬</span><button data-buyup="${k}" ${S.money>=u.price?'':'disabled'}>Comprar</button></div>`).join('');
  const floors=S.unlocked.map((u,i)=>{
    if(!u)return '';
    const f=FLOORS[i];
-   if(f.devil)return `<button class="fbtn devil" data-floor="${i}"><span class="num">🔥</span>
-     <span class="bn">? ? ?</span><span class="pc" style="color:var(--ember)">50 % · un lanzamiento</span>
-     <span class="mn">mín 1.200.000 € → tu vida</span></button>`;
-   return `<button class="fbtn" data-floor="${i}"><span class="num">−${f.f}</span>
+   if(f.devil)return `<button class="fbtn devil" data-floor="${i}"><span class="num">ðŸ”¥</span>
+     <span class="bn">? ? ?</span><span class="pc" style="color:var(--ember)">50 % Â· un lanzamiento</span>
+     <span class="mn">mÃ­n 1.200.000 â‚¬ â†’ tu vida</span></button>`;
+   return `<button class="fbtn" data-floor="${i}"><span class="num">âˆ’${f.f}</span>
      <span class="bn">${f.boss}</span><span class="pc">${(duelWin(i,S.coinLvl)*100).toFixed(0)} %</span>
-     <span class="mn">${fmt(minBet(f))} € → ${fmt(prizeMin(i))} €</span></button>`;
+     <span class="mn">${fmt(minBet(f))} â‚¬ â†’ ${fmt(prizeMin(i))} â‚¬</span></button>`;
  }).join('');
  return `<div class="scene">
   <div class="scene-art">${artClub()}</div>
@@ -526,55 +533,55 @@ function viewClub(){
    <div class="npcrow">
      <div class="who">${bust(ENCARGADO)}<span class="nm">El Encargado</span></div>
    </div>
-   <div class="bubble">«¿Vendes, compras suerte… o bajas?»</div>
+   <div class="bubble">Â«Â¿Vendes, compras suerteâ€¦ o bajas?Â»</div>
    <div class="shops">
     <div class="shop"><h3>${bust(PERISTA,34)} El Perista</h3>
       ${S.inv.length?slots('sell'):'<p class="flavor">Nada que vender.</p>'}</div>
     <div class="shop"><h3>${bust(BUHONERO,34)} El Buhonero</h3>
       ${coinRow}${upRows}</div>
    </div>
-   <div class="panelbox"><h3>🛗 Ascensor</h3>
+   <div class="panelbox"><h3>ðŸ›— Ascensor</h3>
      <div class="floors">${floors}</div>
    </div>
-   <div class="btnrow"><button class="doorbtn" id="tocalle"><span class="ico">🚪</span>A la calle</button></div>
+   <div class="btnrow"><button class="doorbtn" id="tocalle"><span class="ico">ðŸšª</span>A la calle</button></div>
   </div></div>`;
 }
 function viewMesa(){
  const f=FLOORS[S.floor],d=S.duel;
- const pips=(n,tot,cls)=>{let s='';for(let i=0;i<tot;i++)s+=i<n?'●':'○';return `<span class="${cls}">${s}</span>`};
+ const pips=(n,tot,cls)=>{let s='';for(let i=0;i<tot;i++)s+=i<n?'â—':'â—‹';return `<span class="${cls}">${s}</span>`};
  const myCard=d
-  ?`<div class="stakecard mine"><span class="lbl">Tu apuesta</span><span class="e">${d.bet.e}</span><span class="nm2">${d.bet.name}</span><span class="v">${fmt(d.bet.val)} €</span></div>`
-  :`<div class="stakecard mine"><span class="lbl">Tu apuesta</span><span class="hueco">elige abajo…</span></div>`;
- const hisCard=`<div class="stakecard"><span class="lbl">Su apuesta</span><span class="e">${S.stake.e}</span><span class="nm2">${S.stake.name}</span><span class="v">${S.stake.life?'— sin precio —':fmt(S.stake.val)+' €'}</span></div>`;
+  ?`<div class="stakecard mine"><span class="lbl">Tu apuesta</span><span class="e">${d.bet.e}</span><span class="nm2">${d.bet.name}</span><span class="v">${fmt(d.bet.val)} â‚¬</span></div>`
+  :`<div class="stakecard mine"><span class="lbl">Tu apuesta</span><span class="hueco">elige abajoâ€¦</span></div>`;
+ const hisCard=`<div class="stakecard"><span class="lbl">Su apuesta</span><span class="e">${S.stake.e}</span><span class="nm2">${S.stake.name}</span><span class="v">${S.stake.life?'â€” sin precio â€”':fmt(S.stake.val)+' â‚¬'}</span></div>`;
  let bottom='';
  if(!d){
   const any=S.inv.some(it=>it.val>=minBet(f));
   bottom=`${slots('bet')}
-   ${any?'':'<p class="flavor" style="text-align:center">Mínima: '+fmt(minBet(f))+' €. '+(S.floor===0?'A robar.':'Sube un piso.')+'</p>'}
-   <div class="btnrow"><button class="doorbtn" id="toclub2"><span class="ico">🛗</span>Ascensor</button></div>`;
+   ${any?'':'<p class="flavor" style="text-align:center">MÃ­nima: '+fmt(minBet(f))+' â‚¬. '+(S.floor===0?'A robar.':'Sube un piso.')+'</p>'}
+   <div class="btnrow"><button class="doorbtn" id="toclub2"><span class="ico">ðŸ›—</span>Ascensor</button></div>`;
  }else if(!d.over){
   bottom=`<div class="choice">
     <button class="primary" data-call="cara" ${d.busy?'disabled':''}>CARA</button>
     <button class="primary" data-call="cruz" ${d.busy?'disabled':''}>CRUZ</button></div>
    <div class="duel-log">${d.msg||'Elige tu lado.'}</div>
-   ${S.ups.pies&&!f.devil?`<div class="btnrow"><button id="retire" ${S.money>=d.bet.val?'':'disabled'}>🥶 Retirarse · pagar ${fmt(d.bet.val)} €</button></div>`:''}`;
+   ${S.ups.pies&&!f.devil?`<div class="btnrow"><button id="retire" ${S.money>=d.bet.val?'':'disabled'}>ðŸ¥¶ Retirarse Â· pagar ${fmt(d.bet.val)} â‚¬</button></div>`:''}`;
  }else if(d.over==='win'){
-  bottom=`<div class="duel-log"><span class="big good">🎉 Te llevas ${d.prize.e} ${d.prize.name} · ${fmt(d.prize.val)} €</span>${d.unlock?`<br><span class="goldt">${d.unlock}</span>`:''}</div>
+  bottom=`<div class="duel-log"><span class="big good">ðŸŽ‰ Te llevas ${d.prize.e} ${d.prize.name} Â· ${fmt(d.prize.val)} â‚¬</span>${d.unlock?`<br><span class="goldt">${d.unlock}</span>`:''}</div>
    <div class="btnrow"><button class="primary" id="again">Otra ronda</button><button id="wonout">Al ascensor</button></div>`;
  }else{ // lose
   bottom=d.kicked
    ?`<div class="duel-log"><span class="big bad">Pierdes ${d.bet.e} ${d.bet.name}. No te queda nada: TE ECHAN.</span></div>
-     <div class="btnrow"><button class="primary" id="kicked">A la calle…</button></div>`
-   :`<div class="duel-log"><span class="big bad">Pierdes ${d.bet.e} ${d.bet.name}.</span><br>«Mientras te quede algo, la silla es tuya.»</div>
+     <div class="btnrow"><button class="primary" id="kicked">A la calleâ€¦</button></div>`
+   :`<div class="duel-log"><span class="big bad">Pierdes ${d.bet.e} ${d.bet.name}.</span><br>Â«Mientras te quede algo, la silla es tuya.Â»</div>
      <div class="btnrow"><button class="primary" id="stay">Seguir</button><button id="lvout">Al ascensor</button></div>`;
  }
  return `<div class="scene">
   <div class="scene-art">${artMesa(S.floor)}</div>
   <div class="mesa-body">
    <div class="boss-zone">${bust(f,92)}<span class="bn">${f.boss}</span></div>
-   <div class="bubble">${f.devil?'«Un lanzamiento al 50 %. Tu millón contra tu vida.»':(d?(d.over?'…':'«Primero a '+f.to+'.»'):'«Esto pongo. ¿Y tú?»')}</div>
-   <div class="score">TÚ ${pips(d?d.me:0,f.to,'me')} · ${pips(d?d.opp:0,f.to,'opp')} ÉL
-     <span style="color:var(--muted);font-size:11px"> · ${Math.round(pFlip()*100)} %${S.ups.amuleto&&d?(d.amUsed?' · 🐕✗':' · 🐕'):''}</span></div>
+   <div class="bubble">${f.devil?'Â«Un lanzamiento al 50 %. Tu millÃ³n contra tu vida.Â»':(d?(d.over?'â€¦':'Â«Primero a '+f.to+'.Â»'):'Â«Esto pongo. Â¿Y tÃº?Â»')}</div>
+   <div class="score">TÃš ${pips(d?d.me:0,f.to,'me')} Â· ${pips(d?d.opp:0,f.to,'opp')} Ã‰L
+     <span style="color:var(--muted);font-size:11px"> Â· ${Math.round(pFlip()*100)} %${S.ups.amuleto&&d?(d.amUsed?' Â· ðŸ•âœ—':' Â· ðŸ•'):''}</span></div>
    <div class="table3d">${myCard}
      <div class="coin-scene"><div class="coin" id="coin"><div class="face">C</div><div class="face back">X</div></div></div>
      ${hisCard}</div>
@@ -590,10 +597,10 @@ function bind(){
  on('#tocalle',()=>{S.loc='calle';render()});
  on('#toclub2',()=>{S.loc='club';S.duel=null;S.stake=null;render()});
  on('[data-sell]',e=>{const i=+e.currentTarget.dataset.sell;const it=S.inv.splice(i,1)[0];
-   S.money+=it.val;S.stats.earned+=it.val;fx('+'+fmt(it.val)+' €','#6cbd93');
-   log(`Vendido ${it.e} · ${fmt(it.val)} €.`,'gold');render()});
+   S.money+=it.val;S.stats.earned+=it.val;fx('+'+fmt(it.val)+' â‚¬','#6cbd93');
+   log(`Vendido ${it.e} Â· ${fmt(it.val)} â‚¬.`,'gold');render()});
  on('[data-buycoin]',()=>{S.money-=COIN_PRICES[S.coinLvl];S.coinLvl++;
-   fx('🪙 '+COIN_NAMES[S.coinLvl],'#e6a94f');log(`Tu moneda: ${COIN_NAMES[S.coinLvl]} (+${S.coinLvl*5} %).`,'gold');render()});
+   fx('ðŸª™ '+COIN_NAMES[S.coinLvl],'#e6a94f');log(`Tu moneda: ${COIN_NAMES[S.coinLvl]} (+${S.coinLvl*5} %).`,'gold');render()});
  on('[data-buyup]',e=>{const k=e.currentTarget.dataset.buyup;S.money-=UPGRADES[k].price;S.ups[k]=true;
    log(`Compras: ${UPGRADES[k].name}.`,'gold');render()});
  on('[data-floor]',e=>{const i=+e.currentTarget.dataset.floor;rideElevator(i)});
@@ -602,8 +609,8 @@ function bind(){
  on('[data-call]',e=>flip(e.currentTarget.dataset.call));
  on('#retire',()=>{const b=S.duel.bet;if(S.money<b.val)return;
    S.money-=b.val;S.inv.push(b);S.duel=null;S.stake=null;S.loc='club';
-   fx('−'+fmt(b.val)+' €','#ff4a2f');
-   log(`Pagas ${fmt(b.val)} € y te retiras con ${b.e} ${b.name}.`,'');render()});
+   fx('âˆ’'+fmt(b.val)+' â‚¬','#ff4a2f');
+   log(`Pagas ${fmt(b.val)} â‚¬ y te retiras con ${b.e} ${b.name}.`,'');render()});
  on('#again',()=>{S.duel=null;S.stake=makeStake(S.floor);render()});
  on('#wonout',()=>{S.loc='club';S.duel=null;S.stake=null;render()});
  on('#stay',()=>{S.duel=null;render()});
@@ -614,10 +621,10 @@ function bind(){
  $('#nostorage').style.display=storageOK?'none':'block';
  $('#code-open').onclick=()=>{$('#code-out').value=encSave();$('#code-msg').textContent='';$('#ov-code').classList.add('show')};
  $('#code-copy').onclick=()=>{const t=$('#code-out');t.select();t.setSelectionRange(0,999999);
-   try{navigator.clipboard.writeText(t.value);$('#code-msg').textContent='Copiado ✓'}catch(e){document.execCommand('copy');$('#code-msg').textContent='Copiado ✓'}};
+   try{navigator.clipboard.writeText(t.value);$('#code-msg').textContent='Copiado âœ“'}catch(e){document.execCommand('copy');$('#code-msg').textContent='Copiado âœ“'}};
  $('#code-load').onclick=()=>{try{S=decSave($('#code-in').value);save();$('#ov-code').classList.remove('show');render()}
-   catch(e){$('#code-msg').textContent='Código no válido'}};
- $('#reset').onclick=()=>{if(confirm('¿Reiniciar toda la partida?')){try{localStorage.removeItem('hot-sim-v3')}catch(e){}S=structuredClone(FRESH);render()}};
+   catch(e){$('#code-msg').textContent='CÃ³digo no vÃ¡lido'}};
+ $('#reset').onclick=()=>{if(confirm('Â¿Reiniciar toda la partida?')){try{localStorage.removeItem('hot-sim-v3')}catch(e){}S=structuredClone(FRESH);render()}};
  $('#lab-run').onclick=runLab;
 }
 function rideElevator(i){
@@ -625,9 +632,9 @@ function rideElevator(i){
  requestAnimationFrame(()=>el.classList.add('closed'));
  const from=S.loc==='mesa'?FLOORS[S.floor].f:0;
  let cur=from;const target=FLOORS[i].f;
- $('#elev-no').textContent=(cur===0?'0':'−'+cur);
+ $('#elev-no').textContent=(cur===0?'0':'âˆ’'+cur);
  const tick=setInterval(()=>{cur++;if(cur>target){clearInterval(tick);return}
-   $('#elev-no').textContent='−'+cur},350);
+   $('#elev-no').textContent='âˆ’'+cur},350);
  setTimeout(()=>{
   S.floor=i;S.loc='mesa';S.duel=null;S.stake=makeStake(i);render();
   el.classList.remove('closed');
@@ -641,8 +648,8 @@ function rob(){
  const off=Array.isArray(npc.off)?npc.off[rnd(0,npc.off.length-1)]:npc.off;
  const it=makeItem(Math.max(1,c-off),npc.high);
  S.inv.push(it);S.stats.robbed++;
- fx(it.e+' +'+fmt(it.val)+' €','#6cbd93');
- log(`Palazo a ${npc.name}: ${it.e} ${fmt(it.val)} €.`,'good');
+ fx(it.e+' +'+fmt(it.val)+' â‚¬','#6cbd93');
+ log(`Palazo a ${npc.name}: ${it.e} ${fmt(it.val)} â‚¬.`,'good');
  const b=$('#rob');if(b){b.disabled=true;setTimeout(render,650)}else render();
 }
 function flip(call){
@@ -656,14 +663,14 @@ function flip(call){
  }
  const side=hit?call:(call==='cara'?'cruz':'cara');
  d.busy=true;
- const coin=$('#coin'); // giro rápido hasta la cara resultante
+ const coin=$('#coin'); // giro rÃ¡pido hasta la cara resultante
  if(coin){coin.style.transition='';void coin.offsetWidth;coin.style.transform=`rotateY(${720+(side==='cruz'?180:0)}deg)`}
  setTimeout(()=>{
-  if(S.duel!==d)return; // el duelo terminó o se abandonó durante el giro
-  if(canto){d.msg=`¡De canto! Se repite.`}
-  else if(amuleto){d.msg=`El collar brilla: se repite. 🐕`}
-  else if(hit){d.me++;d.msg=`¡${side.toUpperCase()}! Punto para ti.`;fx('●','#6cbd93')}
-  else{d.opp++;d.msg=`${side.toUpperCase()}. Punto para él.`;fx('●','#ff4a2f')}
+  if(S.duel!==d)return; // el duelo terminÃ³ o se abandonÃ³ durante el giro
+  if(canto){d.msg=`Â¡De canto! Se repite.`}
+  else if(amuleto){d.msg=`El collar brilla: se repite. ðŸ•`}
+  else if(hit){d.me++;d.msg=`Â¡${side.toUpperCase()}! Punto para ti.`;fx('â—','#6cbd93')}
+  else{d.opp++;d.msg=`${side.toUpperCase()}. Punto para Ã©l.`;fx('â—','#ff4a2f')}
   d.busy=false;
   if(d.me>=f.to){winDuel()}
   else if(d.opp>=f.to){loseDuel()}
@@ -680,9 +687,9 @@ function winDuel(){
   log('CARA O CRUZ: da igual. Le has ganado al Diablo.','gold');
   flash('flash-win');render();
   $('#ov-result-in').innerHTML=`<div class="bigmsg gold">RECUPERAS TU VIDA</div>
-   <div style="text-align:center;font-size:52px;margin:6px 0">🌅</div>
-   <p style="text-align:center;font-size:14px;color:var(--muted)"><strong>Has completado HELL OR TAILS.</strong><br>Suena un despertador. Huele a café. Un perro ladra en el pasillo.<br>El callejón ya no está donde estaba.</p>
-   <p style="text-align:center;font-family:var(--font-mono);font-size:12px;color:var(--gold)">palazos: ${S.stats.robbed} · duelos ganados: ${S.stats.wins}/${S.stats.duels} · vendido: ${fmt(S.stats.earned)} €</p>
+   <div style="text-align:center;font-size:52px;margin:6px 0">ðŸŒ…</div>
+   <p style="text-align:center;font-size:14px;color:var(--muted)"><strong>Has completado HELL OR TAILS.</strong><br>Suena un despertador. Huele a cafÃ©. Un perro ladra en el pasillo.<br>El callejÃ³n ya no estÃ¡ donde estaba.</p>
+   <p style="text-align:center;font-family:var(--font-mono);font-size:12px;color:var(--gold)">palazos: ${S.stats.robbed} Â· duelos ganados: ${S.stats.wins}/${S.stats.duels} Â· vendido: ${fmt(S.stats.earned)} â‚¬</p>
    <div class="btnrow"><button class="primary" id="ngplus">Seguir jugando</button></div>`;
   $('#ov-result').classList.add('show');
   $('#ngplus').onclick=()=>{$('#ov-result').classList.remove('show');S.loc='club';S.duel=null;S.stake=null;render()};
@@ -694,9 +701,9 @@ function winDuel(){
  d.unlock=null;
  if(fi<9&&!S.unlocked[fi+1]){S.unlocked[fi+1]=true;
    const devilNext=FLOORS[fi+1].devil;
-   d.unlock=devilNext?'🔥 En el panel se enciende un botón SIN NÚMERO, al rojo vivo.':`🛗 ¡DING! Botón nuevo en el ascensor: piso −${fi+2}.`;
+   d.unlock=devilNext?'ðŸ”¥ En el panel se enciende un botÃ³n SIN NÃšMERO, al rojo vivo.':`ðŸ›— Â¡DING! BotÃ³n nuevo en el ascensor: piso âˆ’${fi+2}.`;
    log(d.unlock,devilNext?'bad':'gold')}
- log(`Ganas en el −${f.f}: +${prize.e} ${fmt(prize.val)} €.`,'good');
+ log(`Ganas en el âˆ’${f.f}: +${prize.e} ${fmt(prize.val)} â‚¬.`,'good');
  flash('flash-win');
  render();
 }
@@ -706,9 +713,9 @@ function loseDuel(){
   flash('shake');flash('flash-lose');
   S=structuredClone(FRESH);
   save();render();
-  $('#ov-result-in').innerHTML=`<div class="bigmsg">EL DIABLO SONRÍE</div>
-   <p style="text-align:center;font-size:14px;color:var(--muted)">«Todo.»<br>Objetos, dinero, tu moneda, los pisos. Todo se queda en su vitrina.</p>
-   <div class="btnrow"><button class="primary" id="devilreset">Despiertas en la calle…</button></div>`;
+  $('#ov-result-in').innerHTML=`<div class="bigmsg">EL DIABLO SONRÃE</div>
+   <p style="text-align:center;font-size:14px;color:var(--muted)">Â«Todo.Â»<br>Objetos, dinero, tu moneda, los pisos. Todo se queda en su vitrina.</p>
+   <div class="btnrow"><button class="primary" id="devilreset">Despiertas en la calleâ€¦</button></div>`;
   $('#ov-result').classList.add('show');
   $('#devilreset').onclick=()=>{$('#ov-result').classList.remove('show');render()};
   return;
@@ -722,7 +729,7 @@ function loseDuel(){
 
 // ================= LABORATORIO =================
 const labFloor=$('#lab-floor');
-FLOORS.forEach((f,i)=>{if(f.devil)return;const o=document.createElement('option');o.value=i;o.textContent=`−${f.f} (primero a ${f.to})`;if(i===4)o.selected=true;labFloor.appendChild(o)});
+FLOORS.forEach((f,i)=>{if(f.devil)return;const o=document.createElement('option');o.value=i;o.textContent=`âˆ’${f.f} (primero a ${f.to})`;if(i===4)o.selected=true;labFloor.appendChild(o)});
 const labCoin=$('#lab-coin');
 for(let c=0;c<=10;c++){const o=document.createElement('option');o.value=c;o.textContent=`Nv ${c} (+${c*5}%)`;if(c===0)o.selected=true;labCoin.appendChild(o)}
 function runLab(){
@@ -734,11 +741,14 @@ function runLab(){
  const bet=tierAvg(f.betTier),stake=prizeMin(fi)+5;
  const ev=emp*stake-(1-emp)*bet;
  $('#lab-out').innerHTML=
-`piso −${f.f} · p = ${(p*100).toFixed(0)} % · ${RUNS.toLocaleString('es-ES')} duelos
-victoria empírica:  <b>${(emp*100).toFixed(2)} %</b>
-victoria teórica:   <b>${(theo*100).toFixed(2)} %</b>
-apuestas medias:    tú ${fmt(Math.round(bet))} € · él ${fmt(Math.round(stake))} €
-EV por duelo:       <b>${ev>=0?'+':''}${fmt(Math.round(ev))} €</b>`;
+`piso âˆ’${f.f} Â· p = ${(p*100).toFixed(0)} % Â· ${RUNS.toLocaleString('es-ES')} duelos
+victoria empÃ­rica:  <b>${(emp*100).toFixed(2)} %</b>
+victoria teÃ³rica:   <b>${(theo*100).toFixed(2)} %</b>
+apuestas medias:    tÃº ${fmt(Math.round(bet))} â‚¬ Â· Ã©l ${fmt(Math.round(stake))} â‚¬
+EV por duelo:       <b>${ev>=0?'+':''}${fmt(Math.round(ev))} â‚¬</b>`;
 }
 render();
 </script>
+
+</body>
+</html>
