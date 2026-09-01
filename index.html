@@ -250,17 +250,29 @@
 
   /* ============ REDISEÑO MÓVIL UNIDIRECCIONAL (v23) ============ */
   .wrap{max-width:430px;padding:0 10px}
-  header{padding:10px 4px 8px}
-  .sign{font-size:19px}
-  .hud .chip{font-size:11.5px;padding:4px 10px}
-  /* marco tipo teléfono: escena scrollable + dock fijo abajo */
-  #stage{display:flex;flex-direction:column;min-height:520px;height:min(82vh,780px);border-radius:16px}
-  #app{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch}
-  #app .scene{padding-bottom:14px}
-  #log{flex:0 0 auto;max-height:42px;margin-top:0}
-  #dock{flex:0 0 auto;background:#160f0c;border-top:1px solid var(--line);
-    padding:9px 12px calc(9px + env(safe-area-inset-bottom))}
+  html,body{overflow-x:hidden;max-width:100%}
+  body{padding-bottom:88px}
+  /* HUD compacto en una fila + menú desplegable */
+  header{padding:10px 4px 8px;flex-wrap:nowrap;gap:6px;min-width:0}
+  .sign{font-size:15.5px;white-space:nowrap;flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .hud{gap:5px;flex-wrap:nowrap;justify-content:flex-end;flex:0 0 auto}
+  .hud .chip{font-size:11px;padding:4px 8px;white-space:nowrap}
+  #hud-street,#hud-bonus{display:none}
+  .menuwrap{position:relative}
+  #menu-btn{padding:4px 11px;font-size:16px;line-height:1;color:var(--muted)}
+  .menu{display:none;position:absolute;right:0;top:calc(100% + 6px);z-index:70;
+    flex-direction:column;gap:6px;background:var(--panel);border:1px solid var(--line);
+    border-radius:10px;padding:8px;min-width:190px;box-shadow:0 10px 24px rgba(0,0,0,.55)}
+  .menu.open{display:flex}
+  .menu button{width:100%;text-align:left;font-size:13px;padding:9px 11px}
+  /* dock: barra de navegación fija al fondo de la pantalla (zona del pulgar) */
+  #dock{position:fixed;left:0;right:0;bottom:0;margin:0 auto;z-index:35;
+    width:auto;max-width:430px;background:#160f0c;border-top:1px solid var(--line);
+    padding:8px 12px calc(8px + env(safe-area-inset-bottom))}
   #dock.hide{display:none}
+  /* inventario: rejilla de 3 columnas */
+  .invbar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .invbar .slot{width:auto;height:88px}
   .navbar{display:flex;gap:8px}
   .navbtn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
     padding:8px 0;border-radius:10px;background:transparent;border:1px solid transparent;
@@ -306,12 +318,17 @@
     <h1 class="sign">HELL OR TAILS</h1>
     <div class="hud">
       <span class="chip">💰 <b id="hud-money">0</b> €</span>
-      <span class="chip">🪙 nv <b id="hud-coin">0</b> (<b id="hud-bonus">+0 %</b>)</span>
-      <span class="chip">🏙️ calle <b id="hud-street">T1</b></span>
-      <button id="code-open">💾 código</button>
-      <button id="lab-open">🧪 lab</button>
-      <button id="reset">⟲</button>
-      <span class="chip" style="color:var(--muted)">v23</span>
+      <span class="chip">🪙 nv <b id="hud-coin">0</b><b id="hud-bonus"></b></span>
+      <span class="chip" id="hud-street">T1</span>
+      <div class="menuwrap">
+        <button id="menu-btn" title="Menú">⋯</button>
+        <div id="menu" class="menu">
+          <button id="code-open">💾 Código de partida</button>
+          <button id="lab-open">🧪 Laboratorio</button>
+          <button id="reset">⟲ Reiniciar partida</button>
+          <span class="chip" style="color:var(--muted);align-self:center">v23</span>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -697,6 +714,10 @@ function bind(){
  on('#nav-calle',()=>{S.loc='calle';S.duel=null;S.stake=null;render()});
  on('#nav-club',()=>{S.loc='club';S.duel=null;S.stake=null;render()});
  on('#nav-bajar',()=>{S.loc='ascensor';S.duel=null;S.stake=null;render()});
+ $('#menu-btn').onclick=(e)=>{e.stopPropagation();$('#menu').classList.toggle('open')};
+ if(!$('#menu').dataset.wired){$('#menu').dataset.wired='1';
+  $('#menu').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>$('#menu').classList.remove('open')));
+  document.addEventListener('click',(e)=>{if(!e.target.closest('.menuwrap'))$('#menu').classList.remove('open')});}
  on('[data-sell]',e=>{const i=+e.currentTarget.dataset.sell;const it=S.inv.splice(i,1)[0];
    S.money+=it.val;S.stats.earned+=it.val;fx('+'+fmt(it.val)+' €','#6cbd93');
    log(`Vendido ${it.e} · ${fmt(it.val)} €.`,'gold');render()});
