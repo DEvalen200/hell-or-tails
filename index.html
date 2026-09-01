@@ -247,6 +247,56 @@
     .shop{padding:10px 12px}
     .log{max-height:52px;margin:6px 10px 0;font-size:10.5px}
   }
+
+  /* ============ REDISEÑO MÓVIL UNIDIRECCIONAL (v23) ============ */
+  .wrap{max-width:430px;padding:0 10px}
+  header{padding:10px 4px 8px}
+  .sign{font-size:19px}
+  .hud .chip{font-size:11.5px;padding:4px 10px}
+  /* marco tipo teléfono: escena scrollable + dock fijo abajo */
+  #stage{display:flex;flex-direction:column;min-height:520px;height:min(82vh,780px);border-radius:16px}
+  #app{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  #app .scene{padding-bottom:14px}
+  #log{flex:0 0 auto;max-height:42px;margin-top:0}
+  #dock{flex:0 0 auto;background:#160f0c;border-top:1px solid var(--line);
+    padding:9px 12px calc(9px + env(safe-area-inset-bottom))}
+  #dock.hide{display:none}
+  .navbar{display:flex;gap:8px}
+  .navbtn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+    padding:8px 0;border-radius:10px;background:transparent;border:1px solid transparent;
+    color:var(--muted);cursor:pointer;font-family:var(--font-mono);font-size:10.5px;font-weight:600}
+  .navbtn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2}
+  .navbtn:hover{color:var(--gold)}
+  .navbtn.active{background:var(--panel2);border-color:#6d5326;color:var(--gold)}
+  .navbtn.active.ember{color:var(--ember)}
+  /* CTA primaria a lo ancho, en la zona del pulgar */
+  .cta{width:100%;font-size:17px;font-weight:800;padding:15px 0;border-radius:14px;
+    box-shadow:0 6px 18px rgba(255,74,47,.26)}
+  /* club en una sola columna */
+  .shops{grid-template-columns:1fr;gap:14px}
+  .shop h3{font-size:13.5px}
+  /* barra de nivel de moneda */
+  .lvlbar{height:7px;border-radius:999px;background:var(--panel2);overflow:hidden;margin:10px 0 4px}
+  .lvlbar>div{height:100%;background:linear-gradient(90deg,var(--gold),var(--ember))}
+  /* ascensor: pisos como filas a lo ancho (descenso vertical) */
+  .shaft{display:flex;flex-direction:column;gap:9px}
+  .flr{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);
+    border-radius:12px;padding:10px 12px;width:100%;cursor:pointer;text-align:left;color:var(--text);
+    font-family:var(--font-body)}
+  .flr:hover:not(:disabled){border-color:var(--gold);box-shadow:0 0 14px rgba(230,169,79,.2)}
+  .flr:disabled{cursor:default}
+  .flr .fnum{width:44px;height:44px;flex:0 0 auto;border-radius:50%;border:2px solid #6d5326;
+    display:flex;align-items:center;justify-content:center;font-family:var(--font-sign);font-size:20px;color:var(--gold);
+    background:radial-gradient(circle at 35% 30%,#3a2c1c,#241a10)}
+  .flr .fmid{flex:1 1 auto;min-width:0}
+  .flr .bn2{font-weight:700;font-size:15px;display:block}
+  .flr .rng{font-family:var(--font-mono);font-size:11px;color:var(--muted);display:block}
+  .flr .fright{text-align:right;flex:0 0 auto}
+  .flr .pct{font-family:var(--font-mono);font-size:16px;font-weight:600;display:block}
+  .flr .fmt2{font-family:var(--font-mono);font-size:9px;color:var(--muted)}
+  .flr.devil{border-color:#6e1c10;background:radial-gradient(circle at 50% 0%,#2a0808,#160604)}
+  .flr.devil .fnum{border-color:var(--ember);color:var(--ember);
+    background:radial-gradient(circle at 35% 30%,#3a0d08,#1a0505);box-shadow:0 0 14px rgba(255,74,47,.5)}
 </style>
 
 </head>
@@ -261,7 +311,7 @@
       <button id="code-open">💾 código</button>
       <button id="lab-open">🧪 lab</button>
       <button id="reset">⟲</button>
-      <span class="chip" style="color:var(--muted)">v22</span>
+      <span class="chip" style="color:var(--muted)">v23</span>
     </div>
   </header>
 
@@ -269,6 +319,7 @@
     <div id="nostorage" style="display:none;background:#3a0d08;color:#ffb59a;font-size:12px;padding:6px 12px;text-align:center;font-family:var(--font-mono)">⚠️ Este navegador no guarda la partida (modo privado o datos bloqueados): al recargar se pierde. Usa 💾 código para guardarla a mano.</div>
     <main id="app"></main>
     <div id="log" class="log"></div>
+    <div id="dock"></div>
 
     <div id="elev"><div class="floorno" id="elev-no">·</div><div class="door dl"></div><div class="door dr"></div></div>
 
@@ -491,8 +542,12 @@ function render(){
  const app=$('#app');
  if(S.loc==='calle')app.innerHTML=viewCalle();
  else if(S.loc==='club')app.innerHTML=viewClub();
+ else if(S.loc==='ascensor')app.innerHTML=viewAscensor();
  else app.innerHTML=viewMesa();
  $('#log').innerHTML=S.log.map(l=>`<div class="${l.c}">${l.m}</div>`).join('');
+ const dock=$('#dock');
+ if(S.loc==='mesa'){dock.className='hide';dock.innerHTML='';}
+ else{dock.className='';dock.innerHTML=navBar(S.loc);}
  bind(); save();
 }
 function slots(mode){
@@ -510,18 +565,30 @@ function slots(mode){
  return h+'</div>';
 }
 
+function navBar(active){
+ const ico={
+  calle:'<path d="M4 7l3-3 4 4-3 3zM11 8l9 9M20 17l-2 2"/>',
+  club:'<path d="M3 21V9l9-5 9 5v12M9 21v-6h6v6"/>',
+  bajar:'<path d="M6 3h12v18H6zM12 8v8M9 13l3 3 3-3"/>'
+ };
+ const btn=(id,key,lbl,on,emb)=>`<button class="navbtn ${on?'active':''} ${emb?'ember':''}" id="nav-${id}">
+   <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">${ico[key]}</svg><span>${lbl}</span></button>`;
+ return `<div class="navbar">
+   ${btn('calle','calle','Calle',active==='calle',true)}
+   ${btn('club','club','Club',active==='club',false)}
+   ${btn('bajar','bajar','Bajar',active==='ascensor',true)}
+ </div>`;
+}
 function viewCalle(){
+ const full=S.inv.length>=6;
  return `<div class="scene">
   <div class="scene-art">${artCalle()}</div>
   <div class="scene-body">
-   <h2 class="scene-title"><span class="loc">La calle · noche</span></h2>
-   <p class="flavor" style="text-align:center">La calle da hasta Tier ${streetCeil()}.</p>
-   <div class="btnrow">
-     <button class="primary bigact" id="rob" ${S.inv.length>=6?'disabled':''}>🏏 PALAZO</button>
-     <button class="doorbtn" id="toclub"><span class="ico">🚪</span>Al club</button>
-   </div>
-   ${S.inv.length>=6?'<p class="flavor" style="text-align:center;margin-top:8px">Bolsillos llenos.</p>':''}
+   <h2 class="scene-title"><span class="loc">La calle · noche</span>A robar</h2>
+   <p class="flavor">La calle da hasta Tier ${streetCeil()}. Bolsa ${S.inv.length}/6.</p>
    ${slots('none')}
+   <div style="margin-top:12px"><button class="primary cta bigact" id="rob" ${full?'disabled':''}>🏏 Dar el palazo</button></div>
+   ${full?'<p class="flavor" style="text-align:center;margin-top:8px">Bolsillos llenos. Baja a vender.</p>':''}
   </div></div>`;
 }
 function viewClub(){
@@ -533,33 +600,47 @@ function viewClub(){
  const upRows=Object.entries(UPGRADES).map(([k,u])=>S.ups[k]
   ?`<div class="shop-row"><span>${u.name} <span class="desc">${u.desc}</span></span><span class="owned">✓</span></div>`
   :`<div class="shop-row"><span>${u.name} <span class="desc">${u.desc}</span></span><span class="price">${fmt(u.price)} €</span><button data-buyup="${k}" ${S.money>=u.price?'':'disabled'}>Comprar</button></div>`).join('');
- const floors=S.unlocked.map((u,i)=>{
-   if(!u)return '';
-   const f=FLOORS[i];
-   if(f.devil)return `<button class="fbtn devil" data-floor="${i}"><span class="num">🔥</span>
-     <span class="bn">? ? ?</span><span class="pc" style="color:var(--ember)">50 % · un lanzamiento</span>
-     <span class="mn">mín 1.200.000 € → tu vida</span></button>`;
-   return `<button class="fbtn" data-floor="${i}"><span class="num">−${f.f}</span>
-     <span class="bn">${f.boss}</span><span class="pc">${(duelWin(i,S.coinLvl)*100).toFixed(0)} %</span>
-     <span class="mn">${fmt(minBet(f))} € → ${fmt(prizeMin(i))} €</span></button>`;
- }).join('');
  return `<div class="scene">
   <div class="scene-art">${artClub()}</div>
   <div class="scene-body">
-   <div class="npcrow">
-     <div class="who">${bust(ENCARGADO)}<span class="nm">El Encargado</span></div>
-   </div>
-   <div class="bubble">«¿Vendes, compras suerte… o bajas?»</div>
+   <div class="bubble" style="margin-top:12px">«¿Vendes, mejoras… o bajas?»</div>
    <div class="shops">
-    <div class="shop"><h3>${bust(PERISTA,34)} El Perista</h3>
+    <div class="shop"><h3>${bust(PERISTA,34)} ① Vender · El Perista</h3>
       ${S.inv.length?slots('sell'):'<p class="flavor">Nada que vender.</p>'}</div>
-    <div class="shop"><h3>${bust(BUHONERO,34)} El Buhonero</h3>
-      ${coinRow}${upRows}</div>
+    <div class="shop"><h3>${bust(BUHONERO,34)} ② Mejorar · El Buhonero</h3>
+      ${coinRow}<div class="lvlbar"><div style="width:${S.coinLvl*10}%"></div></div>${upRows}</div>
    </div>
-   <div class="panelbox"><h3>🛗 Ascensor</h3>
-     <div class="floors">${floors}</div>
-   </div>
-   <div class="btnrow"><button class="doorbtn" id="tocalle"><span class="ico">🚪</span>A la calle</button></div>
+   <div style="margin-top:14px"><button class="primary cta bigact" id="tobajar">🛗 Bajar al sótano</button></div>
+  </div></div>`;
+}
+function viewAscensor(){
+ let maxU=0;S.unlocked.forEach((u,i)=>{if(u)maxU=i});
+ const rows=S.unlocked.map((u,i)=>{
+   if(!u)return '';
+   const f=FLOORS[i];
+   if(f.devil)return `<button class="flr devil" data-floor="${i}">
+     <span class="fnum">🔥</span>
+     <span class="fmid"><span class="bn2 sign" style="color:#ffd9c4">El Diablo</span><span class="rng" style="color:#ff8a6a">1.200.000 € → tu vida</span></span>
+     <span class="fright"><span class="pct" style="color:var(--ember)">50 %</span><span class="fmt2">un lanzamiento</span></span></button>`;
+   const pc=Math.round(duelWin(i,S.coinLvl)*100);
+   const col=pc>=70?'var(--win)':(pc>=50?'var(--gold)':'var(--ember)');
+   return `<button class="flr" data-floor="${i}">
+     <span class="fnum">−${f.f}</span>
+     <span class="fmid"><span class="bn2">${f.boss}</span><span class="rng">${fmt(minBet(f))} € → <span style="color:var(--win)">${fmt(prizeMin(i))} €</span></span></span>
+     <span class="fright"><span class="pct" style="color:${col}">${pc} %</span><span class="fmt2">primero a ${f.to}</span></span></button>`;
+ }).join('');
+ const nextLocked=(maxU<FLOORS.length-1 && !S.unlocked[maxU+1] && !FLOORS[maxU+1].devil)
+  ?`<div class="flr" style="opacity:.45">
+     <span class="fnum">−${FLOORS[maxU+1].f}</span>
+     <span class="fmid"><span class="bn2">? ? ?</span><span class="rng">Gana en −${FLOORS[maxU].f} para abrir</span></span>
+     <span class="fright"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a5917d" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span></div>`
+  :'';
+ return `<div class="scene">
+  <div class="scene-art">${artClub()}</div>
+  <div class="scene-body">
+   <h2 class="scene-title" style="text-align:center"><span class="loc" style="color:var(--gold)">El ascensor</span>¿Hasta dónde bajas?</h2>
+   <p class="flavor" style="text-align:center">Cuanto más hondo, más rico… o más muerto.</p>
+   <div class="shaft">${rows}${nextLocked}</div>
   </div></div>`;
 }
 function viewMesa(){
@@ -612,6 +693,10 @@ function bind(){
  on('#toclub',()=>{S.loc='club';render()});
  on('#tocalle',()=>{S.loc='calle';render()});
  on('#toclub2',()=>{S.loc='club';S.duel=null;S.stake=null;render()});
+ on('#tobajar',()=>{S.loc='ascensor';render()});
+ on('#nav-calle',()=>{S.loc='calle';S.duel=null;S.stake=null;render()});
+ on('#nav-club',()=>{S.loc='club';S.duel=null;S.stake=null;render()});
+ on('#nav-bajar',()=>{S.loc='ascensor';S.duel=null;S.stake=null;render()});
  on('[data-sell]',e=>{const i=+e.currentTarget.dataset.sell;const it=S.inv.splice(i,1)[0];
    S.money+=it.val;S.stats.earned+=it.val;fx('+'+fmt(it.val)+' €','#6cbd93');
    log(`Vendido ${it.e} · ${fmt(it.val)} €.`,'gold');render()});
