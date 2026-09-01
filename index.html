@@ -261,7 +261,7 @@
       <button id="code-open">💾 código</button>
       <button id="lab-open">🧪 lab</button>
       <button id="reset">⟲</button>
-      <span class="chip" style="color:var(--muted)">v19</span>
+      <span class="chip" style="color:var(--muted)">v20</span>
     </div>
   </header>
 
@@ -304,16 +304,17 @@
 <script>
 'use strict';
 // ================= DATOS (GDD v0.5) =================
+// catálogo fijo: cada objeto tiene UN precio y no se repite mientras haya otro igual en juego
 const TIERS=[
- {n:1,min:5,max:15,items:[['Lata abollada','🥫'],['Zapato viejo','👞'],['Paraguas roto','☂️'],['Revista del 98','📰'],['Botella vacía','🍾']]},
- {n:2,min:20,max:50,items:[['Radio vieja','📻'],['Cartera','👛'],['Reloj de plástico','⏰'],['Patinete oxidado','🛴']]},
- {n:3,min:75,max:200,items:[['Teléfono','📱'],['Cadena de plata','⛓️'],['Altavoz','🔊'],['Monopatín','🛹']]},
- {n:4,min:300,max:800,items:[['Reloj de oro','⌚'],['Portátil','💻'],['Guitarra eléctrica','🎸'],['Cámara réflex','📷']]},
- {n:5,min:1200,max:3000,items:[['Joyas','💍'],['Lingote pequeño','🪙'],['Cuadro','🖼️'],['Abrigo de pieles','🧥']]},
- {n:6,min:5000,max:12000,items:[['Maletín cerrado','💼'],['Estatuilla de museo','🗿'],['Llaves de un deportivo','🔑']]},
- {n:7,min:20000,max:50000,items:[['Deportivo (papeles falsos)','🏎️'],['Obra maestra robada','🎨'],['Caja de relojes suizos','⌚']]},
- {n:8,min:75000,max:200000,items:[['Escrituras de un rascacielos','🏢'],['Diamante «Ojo de Cabra»','💎'],['Contenedor del puerto','📦']]},
- {n:9,min:300000,max:800000,items:[['Un yate','🛥️'],['La deuda de un senador','📜'],['Una isla (en papeles)','🏝️']]},
+ {n:1,min:5,max:15,items:[['Lata abollada','🥫',5],['Periódico del 98','📰',6],['Botella vacía','🍾',7],['Zapato desparejado','👞',8],['Paraguas roto','☂️',9],['Tenedor torcido','🍴',10],['Peluche tuerto','🧸',11],['Gorra sudada','🧢',12],['Casete sin cinta','📼',13],['Maceta rajada','🪴',14],['Espejo con mala suerte','🪞',15]]},
+ {n:2,min:20,max:50,items:[['Cartera de piel','👛',20],['Reloj de plástico','⏰',22],['Bufanda de lana','🧣',24],['Radio despertador','📻',26],['Termo abollado','🫖',28],['Linterna de mano','🔦',30],['Patinete oxidado','🛴',35],['Secador de peluquería','🔌',40],['Batidora nueva','🥤',45],['Taladro sin batería','🔧',50]]},
+ {n:3,min:75,max:200,items:[['Cadena de plata','⛓️',75],['Auriculares buenos','🎧',78],['Teléfono (pantalla rota)','📱',82],['Monopatín','🛹',85],['Altavoz bluetooth','🔊',100],['Bici plegable','🚲',120],['Chaqueta de cuero','🧥',140],['Consola retro','🕹️',160],['Máquina de escribir','⌨️',180],['Saxofón abollado','🎷',200]]},
+ {n:4,min:300,max:800,items:[['Reloj de oro','⌚',300],['Cámara réflex','📷',305],['Tablet de gama alta','📲',310],['Portátil','💻',400],['Guitarra eléctrica','🎸',500],['Dron','🛸',600],['Traje a medida','🤵',700],['Bici eléctrica','🚴',800]]},
+ {n:5,min:1200,max:3000,items:[['Joyas de la abuela','💍',1200],['Lingote pequeño','🧈',1205],['Reloj suizo','🕰️',1210],['Cuadro de subasta','🖼️',1600],['Piano de pared','🎹',2000],['Moto usada','🏍️',2400],['Colección de vinilos','💿',3000]]},
+ {n:6,min:5000,max:12000,items:[['Maletín cerrado','💼',5000],['Estatuilla de museo','🗿',5005],['Llaves de un deportivo','🔑',5010],['Caja fuerte sin abrir','🧰',7000],['Caballo de carreras','🐎',9000],['Tapiz del s. XV','🧵',12000]]},
+ {n:7,min:20000,max:50000,items:[['Deportivo (papeles falsos)','🏎️',20000],['Obra maestra robada','🎨',20005],['Caja de relojes suizos','⌚',20010],['Autocaravana de lujo','🚐',30000],['Esmeralda «La Envidia»','💚',40000],['Velero','⛵',50000]]},
+ {n:8,min:75000,max:200000,items:[['Escrituras de un rascacielos','🏢',75000],['Diamante «Ojo de Cabra»','💎',75005],['Contenedor del puerto','📦',75010],['Ático en el centro','🏙️',120000],['Colección de arte entera','🖼️',160000],['Avioneta','🛩️',200000]]},
+ {n:9,min:300000,max:800000,items:[['Un yate','🛥️',300000],['La deuda de un senador','📜',300005],['Una isla (en papeles)','🏝️',300010],['Equipo de fútbol de 2ª','⚽',500000],['Un banco (el edificio)','🏦',650000],['Tren privado','🚂',800000],['El Billete del Diablo','🎟️',1200000]]},
 ];
 const FLOORS=[
  {f:1,to:1,handicap:0.00,betTier:1,boss:'El Trilero',    coat:'#7a5a34',skin:'#d9a06b',hat:1,amb:'Una trastienda con una mesa coja.'},
@@ -404,15 +405,23 @@ function pFlip(){const f=FLOORS[S.floor];if(f.devil)return 0.5;
  if(S.floor===0&&S.losses>=3)t=Math.min(1,t+0.10);
  return pForTarget(t,f.to)}
 function streetCeil(){let d=0;S.unlocked.forEach((u,i)=>{if(u)d=i});return Math.min(6,1+Math.max(0,d-3))}
-function pickItem(t){const it=TIERS[t-1].items[rnd(0,TIERS[t-1].items.length-1)];return it}
-function makeItem(t,high){const tt=TIERS[t-1];const [name,e]=pickItem(t);
- const lo=high?Math.round((tt.min+tt.max)/2):tt.min;
- return{name,e,tier:t,val:rnd(lo,tt.max)}}
+function inPlay(){const s=new Set(S.inv.map(i=>i.name));
+ if(S.stake)s.add(S.stake.name);if(S.duel&&S.duel.bet)s.add(S.duel.bet.name);return s}
+const toItem=(x,t)=>({name:x[0],e:x[1],tier:t,val:x[2]});
+function makeItem(t,high){
+ const tt=TIERS[t-1],used=inPlay();
+ let pool=tt.items.filter(x=>!used.has(x[0]));
+ if(!pool.length)pool=tt.items; // catálogo agotado: se permite repetir
+ if(high&&pool.length>1){const s=[...pool].sort((a,b)=>a[2]-b[2]);pool=s.slice(Math.floor(s.length/2))}
+ return toItem(pool[rnd(0,pool.length-1)],tt.n)}
 function makeStake(i){
  if(FLOORS[i].devil)return{name:'Tu antigua vida',e:'🌅',tier:'∞',val:0,life:true};
- const val=prizeMin(i)+rnd(0,10);
- let t=TIERS[0];for(const x of TIERS)if(val>=x.min)t=x;
- const [name,e]=pickItem(t.n);return{name,e,tier:t.n,val}}
+ const pm=prizeMin(i);
+ let t=TIERS[0];for(const x of TIERS)if(pm>=x.min)t=x;
+ let pool=t.items.filter(x=>x[2]>=pm&&x[2]<=pm+10); // objetos-billete del catálogo
+ const used=inPlay(),free=pool.filter(x=>!used.has(x[0]));
+ if(free.length)pool=free;
+ return toItem(pool[rnd(0,pool.length-1)],t.n)}
 function probWin(p,N){let s=0;for(let j=0;j<N;j++)s+=C(N-1+j,j)*Math.pow(p,N)*Math.pow(1-p,j);return s}
 function C(n,k){let r=1;for(let i=1;i<=k;i++)r=r*(n-k+i)/i;return r}
 function log(msg,cls){S.log.unshift({m:msg,c:cls||''});S.log=S.log.slice(0,20)}
