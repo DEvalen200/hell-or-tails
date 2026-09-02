@@ -399,6 +399,7 @@ const TIERS=[
  {n:8,min:75000,max:200000,items:[['Escrituras de un rascacielos','🏢',75000],['Diamante «Ojo de Cabra»','💎',75005],['Contenedor del puerto','📦',75010],['Ático en el centro','🏙️',120000],['Colección de arte entera','🖼️',160000],['Avioneta','🛩️',200000]]},
  {n:9,min:300000,max:800000,items:[['Un yate','🛥️',300000],['La deuda de un senador','📜',300005],['Una isla (en papeles)','🏝️',300010],['Equipo de fútbol de 2ª','⚽',500000],['Un banco (el edificio)','🏦',650000],['Tren privado','🚂',800000],['El Billete del Diablo','🎟️',1200000]]},
 ];
+const CATALOG_TOTAL=TIERS.reduce((s,t)=>s+t.items.length,0);
 const FLOORS=[
  {f:1,to:1,handicap:0.00,betTier:1,boss:'El Trilero',    coat:'#7a5a34',skin:'#d9a06b',hat:1,amb:'Una trastienda con una mesa coja.'},
  {f:2,to:2,handicap:0.05,betTier:2,boss:'La Viuda',      coat:'#5c3a66',skin:'#e0b58a',hat:2,amb:'Terciopelo rojo y humo dulce.'},
@@ -668,6 +669,7 @@ function viewClub(){
 }
 function viewGaleria(){
  const donatable=S.inv.length>0;
+ const have=S.gallery.length,rem=CATALOG_TOTAL-have,pct=Math.round(have/CATALOG_TOTAL*100);
  const peds=S.gallery.length
   ?`<div class="gallery-grid">${S.gallery.map(it=>`<div class="pedestal"><span class="tb">T${it.tier}</span><span class="e">${it.e}</span><span class="n">${it.name}</span><span class="base"></span></div>`).join('')}</div>`
   :`<p class="flavor" style="text-align:center">Los expositores están vacíos. Nada tuyo ha pasado a la posteridad… todavía.</p>`;
@@ -681,7 +683,9 @@ function viewGaleria(){
   <div class="scene-art">${artGaleria()}</div>
   <div class="scene-body">
    <h2 class="scene-title"><span class="loc">El club · la galería</span>Tu colección</h2>
-   <div class="gallery-count">${S.gallery.length} pieza${S.gallery.length===1?'':'s'} en exposición</div>
+   <div class="gallery-count">${have} de ${CATALOG_TOTAL} · ${pct}% de la colección</div>
+   <div class="lvlbar" style="margin:0 auto 8px;max-width:280px"><div style="width:${pct}%;background:#c58bd8 !important"></div></div>
+   <div class="gallery-count" style="color:var(--muted)">${rem>0?`Te faltan <strong style="color:#d9b3e8">${rem}</strong> objeto${rem===1?'':'s'} para el 100%`:'🏆 Colección completa. Lo tienes todo.'}</div>
    ${peds}
    <div class="bubble" style="margin-top:12px">«Aquí no se vende ni se apuesta. Lo que dejas, se queda. Es tu legado, y todos lo verán.»</div>
    ${pending||(donatable
