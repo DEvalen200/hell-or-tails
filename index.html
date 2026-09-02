@@ -80,6 +80,21 @@
     font-family:var(--font-mono);font-size:9px;letter-spacing:.08em;background:var(--gold);color:#2e2008;
     border-radius:99px;padding:1px 8px;white-space:nowrap}
   .slot .act.sell{background:var(--win);color:#0e2418}
+  .slot .act.donate{background:#c58bd8;color:#22102a}
+
+  /* ---------- galería ---------- */
+  .gallery-grid{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:8px 0 4px}
+  .pedestal{position:relative;width:84px;height:104px;border:1px solid var(--line);border-radius:10px;
+    background:linear-gradient(180deg,rgba(197,139,216,.12),rgba(0,0,0,.25));
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;overflow:hidden}
+  .pedestal::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);
+    width:60%;height:34px;background:radial-gradient(ellipse at top,rgba(230,169,79,.5),transparent 70%);pointer-events:none}
+  .pedestal.empty{border-style:dashed;opacity:.4}
+  .pedestal .e{font-size:30px;line-height:1;filter:drop-shadow(0 0 6px rgba(230,169,79,.4))}
+  .pedestal .n{font-size:9.5px;color:var(--text);text-align:center;line-height:1.1;max-height:22px;overflow:hidden;padding:0 3px}
+  .pedestal .tb{position:absolute;top:3px;left:5px;font-family:var(--font-mono);font-size:9px;color:var(--gold)}
+  .pedestal .base{position:absolute;bottom:0;left:0;right:0;height:12px;background:var(--panel2);border-top:1px solid var(--line)}
+  .gallery-count{text-align:center;font-family:var(--font-mono);font-size:12px;color:var(--gold);margin:2px 0 8px}
 
   /* ---------- botones ---------- */
   button{font-family:var(--font-body);font-weight:700;font-size:14px;color:var(--text);
@@ -411,10 +426,11 @@ const NPCS=[
 
 // ================= ESTADO =================
 const FRESH={loc:'calle',money:0,coinLvl:0,ups:{canto:false,amuleto:false,pies:false},
- inv:[],unlocked:[true,false,false,false,false,false,false,false,false],
+ inv:[],gallery:[],unlocked:[true,false,false,false,false,false,false,false,false],
  duel:null,stake:null,floor:0,losses:0,
  stats:{robbed:0,duels:0,wins:0,earned:0},log:[]};
 let S=load();
+if(!Array.isArray(S.gallery))S.gallery=[];
 // código de partida (unicode-safe base64)
 function encSave(){return btoa(unescape(encodeURIComponent(JSON.stringify(S))))}
 function decSave(t){const o=JSON.parse(decodeURIComponent(escape(atob(t.trim()))));
@@ -539,6 +555,14 @@ function artClub(){return `<svg class="art" viewBox="0 0 800 150" preserveAspect
  <line x1="400" y1="46" x2="400" y2="150" stroke="#6d5326" stroke-width="3"/>
  <text x="400" y="40" text-anchor="middle" fill="#e6a94f" font-size="11" font-family="monospace">▼ ASCENSOR ▼</text>
 </svg>`}
+function artGaleria(){return `<svg class="art" viewBox="0 0 800 150" preserveAspectRatio="xMidYMid slice">
+ <rect width="800" height="150" fill="#1a1220"/>
+ <rect width="800" height="150" fill="url(#gg1)"/><defs>
+ <radialGradient id="gg1" cx="50%" cy="10%" r="80%"><stop offset="0%" stop-color="#c58bd8" stop-opacity=".22"/><stop offset="65%" stop-color="#000" stop-opacity="0"/></radialGradient></defs>
+ <rect y="122" width="800" height="28" fill="#241a2b"/>
+ ${[120,300,500,680].map(x=>`<g><rect x="${x-34}" y="60" width="68" height="62" rx="4" fill="#0f0a16" stroke="#4a3a55"/><rect x="${x-34}" y="56" width="68" height="8" fill="#3a2c45"/><ellipse cx="${x}" cy="60" rx="30" ry="7" fill="#e6a94f" opacity=".35"/><rect x="${x-3}" y="70" width="6" height="40" fill="#5a4468"/></g>`).join('')}
+ <text x="400" y="26" text-anchor="middle" fill="#d9b3e8" font-size="13" font-family="monospace" letter-spacing="4">LA GALERÍA</text>
+</svg>`}
 function artMesa(fi){const t=fi/(FLOORS.length-1);
  const top=`hsl(${18-t*14},${45+t*30}%,${16-t*8}%)`,glow=t>0.4?'#ff4a2f':'#e6a94f';
  return `<svg class="art" viewBox="0 0 800 150" preserveAspectRatio="xMidYMid slice">
@@ -559,6 +583,7 @@ function render(){
  const app=$('#app');
  if(S.loc==='calle')app.innerHTML=viewCalle();
  else if(S.loc==='club')app.innerHTML=viewClub();
+ else if(S.loc==='galeria')app.innerHTML=viewGaleria();
  else if(S.loc==='ascensor')app.innerHTML=viewAscensor();
  else app.innerHTML=viewMesa();
  $('#log').innerHTML=S.log.map(l=>`<div class="${l.c}">${l.m}</div>`).join('');
@@ -581,6 +606,8 @@ function slots(mode){
   if(!it){h+='<div class="slot empty"><span class="e">·</span></div>';continue}
   const inner=`<span class="tb">T${it.tier}</span><span class="e">${it.e}</span><span class="n">${it.name}</span><span class="v">${fmt(it.val)} €</span>`;
   if(mode==='sell')h+=`<button class="slot" data-sell="${i}">${inner}<span class="act sell">VENDER</span></button>`;
+  else if(mode==='donate'){const dup=S.gallery.some(g=>g.name===it.name);
+   h+=`<button class="slot" data-donate="${i}" ${dup?'disabled':''}>${inner}${dup?'<span class="act donate">YA EXPUESTO</span>':'<span class="act donate">EXPONER</span>'}</button>`}
   else if(mode==='bet'){const ok=it.val>=minBet(FLOORS[S.floor]);
    h+=`<button class="slot" data-bet="${i}" ${ok?'':'disabled'}>${inner}${ok?'<span class="act">APOSTAR</span>':''}</button>`}
   else h+=`<div class="slot">${inner}</div>`;
@@ -633,7 +660,33 @@ function viewClub(){
     <div class="shop"><h3>${bust(BUHONERO,34)} ② Mejorar · El Buhonero</h3>
       ${coinRow}<div class="lvlbar"><div style="width:${S.coinLvl*10}%"></div></div>${upRows}</div>
    </div>
-   <div style="margin-top:14px"><button class="primary cta bigact" id="tobajar">🛗 Bajar al sótano</button></div>
+   <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+    <button class="cta bigact" id="togaleria">🏛️ La Galería${S.gallery.length?' · '+S.gallery.length:''}</button>
+    <button class="primary cta bigact" id="tobajar">🛗 Bajar al sótano</button>
+   </div>
+  </div></div>`;
+}
+function viewGaleria(){
+ const donatable=S.inv.length>0;
+ const peds=S.gallery.length
+  ?`<div class="gallery-grid">${S.gallery.map(it=>`<div class="pedestal"><span class="tb">T${it.tier}</span><span class="e">${it.e}</span><span class="n">${it.name}</span><span class="base"></span></div>`).join('')}</div>`
+  :`<p class="flavor" style="text-align:center">Los expositores están vacíos. Nada tuyo ha pasado a la posteridad… todavía.</p>`;
+ let pending='';
+ if(S.pendGift!=null&&S.inv[S.pendGift]){const it=S.inv[S.pendGift];
+  pending=`<div class="bubble" style="margin-top:10px;border-color:#c58bd8">
+    Vas a exponer ${it.e} <strong>${it.name}</strong> (${fmt(it.val)} €). Se queda en la galería <strong>para siempre</strong>: no podrás venderlo ni apostarlo nunca más.
+    <div class="btnrow" style="margin-top:8px"><button class="primary" id="gift-yes">Exponer para siempre</button><button id="gift-no">Cancelar</button></div>
+  </div>`;}
+ return `<div class="scene">
+  <div class="scene-art">${artGaleria()}</div>
+  <div class="scene-body">
+   <h2 class="scene-title"><span class="loc">El club · la galería</span>Tu colección</h2>
+   <div class="gallery-count">${S.gallery.length} pieza${S.gallery.length===1?'':'s'} en exposición</div>
+   ${peds}
+   <div class="bubble" style="margin-top:12px">«Aquí no se vende ni se apuesta. Lo que dejas, se queda. Es tu legado, y todos lo verán.»</div>
+   ${pending||(donatable
+     ?`<p class="flavor" style="text-align:center;margin-top:10px">Elige un objeto para exponerlo. Ojo: es permanente.</p>${slots('donate')}`
+     :`<p class="flavor" style="text-align:center;margin-top:10px">No llevas nada encima. Roba algo en la calle si quieres donarlo.</p>`)}
   </div></div>`;
 }
 function viewAscensor(){
@@ -719,6 +772,7 @@ function bind(){
  on('#tocalle',()=>{S.loc='calle';render()});
  on('#toclub2',()=>{S.loc='club';S.duel=null;S.stake=null;render()});
  on('#tobajar',()=>{S.loc='ascensor';render()});
+ on('#togaleria',()=>{S.loc='galeria';S.pendGift=null;render()});
  on('#nav-calle',()=>{S.loc='calle';S.duel=null;S.stake=null;render()});
  on('#nav-club',()=>{S.loc='club';S.duel=null;S.stake=null;render()});
  on('#nav-bajar',()=>{S.loc='ascensor';S.duel=null;S.stake=null;render()});
@@ -729,6 +783,13 @@ function bind(){
  on('[data-sell]',e=>{const i=+e.currentTarget.dataset.sell;const it=S.inv.splice(i,1)[0];
    S.money+=it.val;S.stats.earned+=it.val;fx('+'+fmt(it.val)+' €','#6cbd93');
    log(`Vendido ${it.e} · ${fmt(it.val)} €.`,'gold');render()});
+ on('[data-donate]',e=>{S.pendGift=+e.currentTarget.dataset.donate;render()});
+ on('#gift-no',()=>{S.pendGift=null;render()});
+ on('#gift-yes',()=>{const i=S.pendGift;if(i==null||!S.inv[i]){S.pendGift=null;return render()}
+   const it=S.inv[i];
+   if(S.gallery.some(g=>g.name===it.name)){S.pendGift=null;log(`${it.name} ya está en la galería.`,'bad');return render()}
+   S.inv.splice(i,1);S.gallery.push(it);S.pendGift=null;
+   fx('🏛️ '+it.e,'#c58bd8');log(`Expones ${it.e} ${it.name} en la galería. Para siempre.`,'gold');render()});
  on('[data-buycoin]',()=>{S.money-=COIN_PRICES[S.coinLvl];S.coinLvl++;
    fx('🪙 '+COIN_NAMES[S.coinLvl],'#e6a94f');log(`Tu moneda: ${COIN_NAMES[S.coinLvl]} (+${S.coinLvl*5} %).`,'gold');render()});
  on('[data-buyup]',e=>{const k=e.currentTarget.dataset.buyup;S.money-=UPGRADES[k].price;S.ups[k]=true;
@@ -843,9 +904,10 @@ function winDuel(){
 }
 function loseDuel(){
  const d=S.duel,f=FLOORS[S.floor];
- if(f.devil){ // perder contra el Diablo: se pierde TODO
+ if(f.devil){ // perder contra el Diablo: se pierde TODO menos la galería (tu legado)
   flash('shake');flash('flash-lose');
-  S=structuredClone(FRESH);
+  const keep=S.gallery;
+  S=structuredClone(FRESH);S.gallery=keep;
   save();render();
   $('#ov-result-in').innerHTML=`<div class="bigmsg">EL DIABLO SONRÍE</div>
    <p style="text-align:center;font-size:14px;color:var(--muted)">«Todo.»<br>Objetos, dinero, tu moneda, los pisos. Todo se queda en su vitrina.</p>
