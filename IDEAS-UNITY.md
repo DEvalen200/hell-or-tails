@@ -38,3 +38,30 @@ el simulador web). Se apuntan aquí para no perderlas.
   cada nivel, precio, y si afecta solo a la calle o también a lo rápido que
   cruzas el vestíbulo/ascensor.
 
+---
+
+## Indicadores visuales de nivel en la moneda (estrellitas)
+
+- Al mejorar la moneda, además de cambiar de material (céntimo → doblón, como ya
+  hace la web), aparece una **modificación grabada en la propia moneda: una
+  estrellita por cada nivel mejorado**.
+- Lectura instantánea del nivel sin abrir menú: miras la moneda y cuentas las
+  estrellas. Refuerza la fantasía de "tu moneda es TU moneda" del GDD.
+- En Unity: las estrellas se graban/incrustan en el modelo 3D de la moneda
+  (relieve, esmalte o gema según el tramo). 10 niveles = hasta 10 estrellas;
+  pendiente ver disposición (anillo alrededor del canto, cara, etc.) para que
+  no sature a nivel alto.
+
+---
+
+## Anillos en la mano por nivel de Mano rápida
+
+- La mejora de **Mano rápida** (velocidad de tirada) se representa físicamente:
+  **un anillo extra en la mano por cada nivel mejorado**.
+- Igual que las estrellas de la moneda, es feedback visible del progreso: la mano
+  que lanza la moneda se va cargando de anillos según subes la mejora.
+- En Unity: anillos como assets en los dedos del modelo de la mano, visibles en
+  el plano cinematográfico del lanzamiento. 5 niveles = hasta 5 anillos;
+  pendiente el diseño de cada anillo (de latón cutre a algo más ostentoso/infernal).
+
+
